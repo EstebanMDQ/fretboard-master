@@ -1,5 +1,6 @@
 import { useEffect, useReducer, type ReactNode } from 'react'
 import { saveInstrumentConfig } from '../theory/tunings'
+import { saveMetronomeSettings } from '../audio/metronome'
 import { AppDispatchContext, AppStateContext, appReducer, initAppState } from './appStateStore'
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
@@ -8,6 +9,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveInstrumentConfig(state.instrumentConfig)
   }, [state.instrumentConfig])
+
+  useEffect(() => {
+    saveMetronomeSettings({
+      tempoBpm: state.tempoBpm,
+      numerator: state.metronome.numerator,
+      denominator: state.metronome.denominator,
+      pattern: state.metronome.pattern,
+      gapTraining: state.metronome.gapTraining,
+    })
+  }, [state.tempoBpm, state.metronome])
 
   return (
     <AppStateContext.Provider value={state}>

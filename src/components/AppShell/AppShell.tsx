@@ -2,6 +2,7 @@ import { Fretboard } from '../Fretboard/Fretboard'
 import { InstrumentPanel } from '../InstrumentPanel/InstrumentPanel'
 import { ScalePanel } from '../ScalePanel/ScalePanel'
 import { ArpeggioPanel } from '../ArpeggioPanel/ArpeggioPanel'
+import { MetronomePanel } from '../MetronomePanel/MetronomePanel'
 import { buildMarkers, SCALE_PRESETS } from '../../theory/scales'
 import { fallbackDegreeLabel } from '../../theory/degrees'
 import { resolveArpeggioChord } from '../../theory/chordParser'
@@ -10,7 +11,7 @@ import { useAppDispatch, useAppState } from '../../state/useAppState'
 import './AppShell.css'
 
 export function AppShell() {
-  const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool } = useAppState()
+  const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool, tempoBpm, metronome } = useAppState()
   const dispatch = useAppDispatch()
 
   let markers: Marker[] = []
@@ -61,6 +62,16 @@ export function AppShell() {
             <option value="degrees">Scale degrees</option>
           </select>
         </label>
+
+        <MetronomePanel
+          tempoBpm={tempoBpm}
+          metronome={metronome}
+          onTempoChange={(value) => dispatch({ type: 'setTempoBpm', tempoBpm: value })}
+          onMeterChange={(numerator, denominator) => dispatch({ type: 'setMeter', numerator, denominator })}
+          onCycleBeat={(index) => dispatch({ type: 'cycleBeatAccent', index })}
+          onGapTrainingChange={(gapTraining) => dispatch({ type: 'setGapTraining', gapTraining })}
+          onToggleCollapsed={() => dispatch({ type: 'toggleMetronomeCollapsed' })}
+        />
       </div>
 
       <aside className="app-shell__panel" aria-label="Controls">

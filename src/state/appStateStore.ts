@@ -2,6 +2,13 @@ import { createContext, type Dispatch } from 'react'
 import type { Spelling } from '../theory/notes'
 import { loadInstrumentConfig, type InstrumentConfig } from '../theory/tunings'
 import type { DisplayMode } from '../theory/scales'
+import {
+  cycleAccent,
+  defaultPattern,
+  loadMetronomeSettings,
+  type BeatAccent,
+  type GapTrainingSettings,
+} from '../audio/metronome'
 
 export type ActiveTool = 'scale' | 'arpeggio'
 
@@ -17,12 +24,22 @@ export interface ArpeggioToolState {
   noteByNote: Spelling[]
 }
 
+export interface MetronomeToolState {
+  numerator: number
+  denominator: 2 | 4 | 8 | 16
+  pattern: BeatAccent[]
+  gapTraining: GapTrainingSettings | null
+  collapsed: boolean
+}
+
 export interface AppState {
   instrumentConfig: InstrumentConfig
   displayMode: DisplayMode
   activeTool: ActiveTool
   scaleTool: ScaleToolState
   arpeggioTool: ArpeggioToolState
+  tempoBpm: number
+  metronome: MetronomeToolState
 }
 
 export type AppAction =
@@ -36,6 +53,11 @@ export type AppAction =
   | { type: 'setArpeggioSymbol'; symbol: string }
   | { type: 'addNoteByNote'; spelling: Spelling }
   | { type: 'clearNoteByNote' }
+  | { type: 'setTempoBpm'; tempoBpm: number }
+  | { type: 'setMeter'; numerator: number; denominator: 2 | 4 | 8 | 16 }
+  | { type: 'cycleBeatAccent'; index: number }
+  | { type: 'setGapTraining'; gapTraining: GapTrainingSettings | null }
+  | { type: 'toggleMetronomeCollapsed' }
 
 function initScaleToolState(): ScaleToolState {
   return {
@@ -82,18 +104,49 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
     case 'clearNoteByNote':
       return { ...state, arpeggioTool: { ...state.arpeggioTool, noteByNote: [] } }
+    case 'setTempoBpm':
+      return { ...state, tempoBpm: Math.min(300, Math.max(30, action.tempoBpm)) }
+    case 'setMeter':
+      return {
+        ...state,
+        metronome: {
+          ...state.metronome,
+          numerator: action.numerator,
+          denominator: action.denominator,
+          pattern: defaultPattern(action.numerator, action.denominator),
+        },
+      }
+    case 'cycleBeatAccent': {
+      const pattern = state.metronome.pattern.map((accent, index) =>
+        index === action.index ? cycleAccent(accent) : accent,
+      )
+      return { ...state, metronome: { ...state.metronome, pattern } }
+    }
+    case 'setGapTraining':
+      return { ...state, metronome: { ...state.metronome, gapTraining: action.gapTraining } }
+    case 'toggleMetronomeCollapsed':
+      return { ...state, metronome: { ...state.metronome, collapsed: !state.metronome.collapsed } }
     default:
       return state
   }
 }
 
 export function initAppState(): AppState {
+  const storedMetronome = loadMetronomeSettings()
   return {
     instrumentConfig: loadInstrumentConfig(),
     displayMode: 'names',
     activeTool: 'scale',
     scaleTool: initScaleToolState(),
     arpeggioTool: initArpeggioToolState(),
+    tempoBpm: storedMetronome.tempoBpm,
+    metronome: {
+      numerator: storedMetronome.numerator,
+      denominator: storedMetronome.denominator,
+      pattern: storedMetronome.pattern,
+      gapTraining: storedMetronome.gapTraining,
+      collapsed: true,
+    },
   }
 }
 

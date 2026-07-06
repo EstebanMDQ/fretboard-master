@@ -1,0 +1,82 @@
+.metronome-panel__toggle {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.metronome-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.metronome-panel__field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.metronome-panel__field input,
+.metronome-panel__field select {
+  width: 64px;
+}
+
+.metronome-panel__meter {
+  display: flex;
+  gap: 12px;
+}
+
+.metronome-panel__beats {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.metronome-panel__beat {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.metronome-panel__beat--accent {
+  border-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.metronome-panel__beat--mute {
+  opacity: 0.4;
+}
+
+.metronome-panel__beat--current {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.metronome-panel__gap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.metronome-panel__play {
+  align-self: flex-start;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
