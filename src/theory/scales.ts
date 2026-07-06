@@ -27,7 +27,9 @@ export function buildMarkers(
 
   return positions.map((position) => {
     const relativeInterval = (((position.pitchClass - rootPitchClass) % 12) + 12) % 12
-    const degreeIndex = intervals.indexOf(relativeInterval)
+    // Extended intervals (e.g. a 9th stored as 14) fold to the same pitch class as a 2nd (2);
+    // match by pitch class so the degree label stays honest ("9", not "2").
+    const degreeIndex = intervals.findIndex((interval) => (((interval % 12) + 12) % 12) === relativeInterval)
     const degreeLabel = degreeIndex >= 0 ? degreeLabels[degreeIndex] : fallbackDegreeLabel(relativeInterval)
     const label = displayMode === 'degrees' ? degreeLabel : spellingToLabel(spellDegree(root, degreeLabel))
     return {

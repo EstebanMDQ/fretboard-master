@@ -3,6 +3,8 @@ import type { Spelling } from '../theory/notes'
 import { loadInstrumentConfig, type InstrumentConfig } from '../theory/tunings'
 import type { DisplayMode } from '../theory/scales'
 
+export type ActiveTool = 'scale' | 'arpeggio'
+
 export interface ScaleToolState {
   root: Spelling
   isCustom: boolean
@@ -10,19 +12,30 @@ export interface ScaleToolState {
   customIntervals: number[]
 }
 
+export interface ArpeggioToolState {
+  symbolInput: string
+  noteByNote: Spelling[]
+}
+
 export interface AppState {
   instrumentConfig: InstrumentConfig
   displayMode: DisplayMode
+  activeTool: ActiveTool
   scaleTool: ScaleToolState
+  arpeggioTool: ArpeggioToolState
 }
 
 export type AppAction =
   | { type: 'setInstrumentConfig'; config: InstrumentConfig }
   | { type: 'setDisplayMode'; displayMode: DisplayMode }
+  | { type: 'setActiveTool'; tool: ActiveTool }
   | { type: 'setScaleRoot'; root: Spelling }
   | { type: 'selectScalePreset'; presetIndex: number }
   | { type: 'setCustomScaleMode' }
   | { type: 'toggleCustomScaleInterval'; interval: number }
+  | { type: 'setArpeggioSymbol'; symbol: string }
+  | { type: 'addNoteByNote'; spelling: Spelling }
+  | { type: 'clearNoteByNote' }
 
 function initScaleToolState(): ScaleToolState {
   return {
@@ -33,12 +46,18 @@ function initScaleToolState(): ScaleToolState {
   }
 }
 
+function initArpeggioToolState(): ArpeggioToolState {
+  return { symbolInput: '', noteByNote: [] }
+}
+
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'setInstrumentConfig':
       return { ...state, instrumentConfig: action.config }
     case 'setDisplayMode':
       return { ...state, displayMode: action.displayMode }
+    case 'setActiveTool':
+      return { ...state, activeTool: action.tool }
     case 'setScaleRoot':
       return { ...state, scaleTool: { ...state.scaleTool, root: action.root } }
     case 'selectScalePreset':
@@ -54,6 +73,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         : [...current, interval].sort((a, b) => a - b)
       return { ...state, scaleTool: { ...state.scaleTool, customIntervals } }
     }
+    case 'setArpeggioSymbol':
+      return { ...state, arpeggioTool: { ...state.arpeggioTool, symbolInput: action.symbol } }
+    case 'addNoteByNote':
+      return {
+        ...state,
+        arpeggioTool: { ...state.arpeggioTool, noteByNote: [...state.arpeggioTool.noteByNote, action.spelling] },
+      }
+    case 'clearNoteByNote':
+      return { ...state, arpeggioTool: { ...state.arpeggioTool, noteByNote: [] } }
     default:
       return state
   }
@@ -63,7 +91,9 @@ export function initAppState(): AppState {
   return {
     instrumentConfig: loadInstrumentConfig(),
     displayMode: 'names',
+    activeTool: 'scale',
     scaleTool: initScaleToolState(),
+    arpeggioTool: initArpeggioToolState(),
   }
 }
 

@@ -26,7 +26,29 @@
   padding: 10px 20px;
   border-bottom: 1px solid var(--border);
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+}
+
+.app-shell__tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.app-shell__tab {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.app-shell__tab--active {
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 .app-shell__display-toggle {
