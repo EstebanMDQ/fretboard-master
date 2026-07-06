@@ -24,6 +24,7 @@ export interface ScaleToolState {
 export interface ArpeggioToolState {
   symbolInput: string
   noteByNote: Spelling[]
+  playbackDirection: PlaybackDirection
 }
 
 export interface MetronomeToolState {
@@ -56,6 +57,7 @@ export type AppAction =
   | { type: 'setArpeggioSymbol'; symbol: string }
   | { type: 'addNoteByNote'; spelling: Spelling }
   | { type: 'clearNoteByNote' }
+  | { type: 'setArpeggioPlaybackDirection'; direction: PlaybackDirection }
   | { type: 'setTempoBpm'; tempoBpm: number }
   | { type: 'setMeter'; numerator: number; denominator: 2 | 4 | 8 | 16 }
   | { type: 'cycleBeatAccent'; index: number }
@@ -73,7 +75,7 @@ function initScaleToolState(): ScaleToolState {
 }
 
 function initArpeggioToolState(): ArpeggioToolState {
-  return { symbolInput: '', noteByNote: [] }
+  return { symbolInput: '', noteByNote: [], playbackDirection: 'ascending' }
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -110,6 +112,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
     case 'clearNoteByNote':
       return { ...state, arpeggioTool: { ...state.arpeggioTool, noteByNote: [] } }
+    case 'setArpeggioPlaybackDirection':
+      return { ...state, arpeggioTool: { ...state.arpeggioTool, playbackDirection: action.direction } }
     case 'setTempoBpm':
       return { ...state, tempoBpm: Math.min(300, Math.max(30, action.tempoBpm)) }
     case 'setMeter':

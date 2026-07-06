@@ -15,7 +15,7 @@ import './AppShell.css'
 export function AppShell() {
   const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool, tempoBpm, metronome } = useAppState()
   const dispatch = useAppDispatch()
-  const scalePlayback = useSequencePlayback()
+  const notePlayback = useSequencePlayback()
 
   const scaleIntervals = scaleTool.isCustom
     ? scaleTool.customIntervals
@@ -24,26 +24,34 @@ export function AppShell() {
     ? scaleTool.customIntervals.map(fallbackDegreeLabel)
     : SCALE_PRESETS[scaleTool.presetIndex].degreeLabels
 
-  // Interruption rules: changing scale, root, tuning, or switching tools stops scale playback.
-  const stopScalePlaybackRef = useRef(scalePlayback.stop)
+  const chord = resolveArpeggioChord(arpeggioTool.symbolInput, arpeggioTool.noteByNote)
+
+  // Interruption rules: changing scale/chord, root, tuning, or switching tools stops playback.
+  const stopPlaybackRef = useRef(notePlayback.stop)
   useEffect(() => {
-    stopScalePlaybackRef.current = scalePlayback.stop
+    stopPlaybackRef.current = notePlayback.stop
   })
   useEffect(() => {
-    stopScalePlaybackRef.current()
-  }, [instrumentConfig, activeTool, scaleTool.root, scaleTool.isCustom, scaleTool.presetIndex, scaleTool.customIntervals])
+    stopPlaybackRef.current()
+  }, [
+    instrumentConfig,
+    activeTool,
+    scaleTool.root,
+    scaleTool.isCustom,
+    scaleTool.presetIndex,
+    scaleTool.customIntervals,
+    arpeggioTool.symbolInput,
+    arpeggioTool.noteByNote,
+  ])
 
   let markers: Marker[] = []
   if (activeTool === 'scale') {
     markers = buildMarkers(instrumentConfig, scaleTool.root, scaleIntervals, scaleDegreeLabels, displayMode)
-    if (scalePlayback.isPlaying && scalePlayback.currentInterval !== null) {
-      markers = markers.map((marker) => ({ ...marker, pulsing: marker.degree === scalePlayback.currentInterval }))
-    }
-  } else {
-    const chord = resolveArpeggioChord(arpeggioTool.symbolInput, arpeggioTool.noteByNote)
-    if (chord) {
-      markers = buildMarkers(instrumentConfig, chord.root, chord.intervals, chord.degreeLabels, displayMode)
-    }
+  } else if (chord) {
+    markers = buildMarkers(instrumentConfig, chord.root, chord.intervals, chord.degreeLabels, displayMode)
+  }
+  if (notePlayback.isPlaying && notePlayback.currentInterval !== null) {
+    markers = markers.map((marker) => ({ ...marker, pulsing: marker.degree === notePlayback.currentInterval }))
   }
 
   return (
@@ -101,9 +109,9 @@ export function AppShell() {
             onCustomMode={() => dispatch({ type: 'setCustomScaleMode' })}
             onToggleCustomInterval={(interval) => dispatch({ type: 'toggleCustomScaleInterval', interval })}
             onDirectionChange={(direction) => dispatch({ type: 'setScalePlaybackDirection', direction })}
-            isPlaying={scalePlayback.isPlaying}
+            isPlaying={notePlayback.isPlaying}
             onPlay={() =>
-              scalePlayback.play({
+              notePlayback.play({
                 root: scaleTool.root,
                 intervals: scaleIntervals,
                 tempoBpm,
@@ -117,6 +125,18 @@ export function AppShell() {
             onSymbolChange={(symbol) => dispatch({ type: 'setArpeggioSymbol', symbol })}
             onAddNote={(spelling) => dispatch({ type: 'addNoteByNote', spelling })}
             onClearNotes={() => dispatch({ type: 'clearNoteByNote' })}
+            onDirectionChange={(direction) => dispatch({ type: 'setArpeggioPlaybackDirection', direction })}
+            isPlaying={notePlayback.isPlaying}
+            canPlay={chord !== null}
+            onPlay={() => {
+              if (!chord) return
+              notePlayback.play({
+                root: chord.root,
+                intervals: chord.intervals,
+                tempoBpm,
+                direction: arpeggioTool.playbackDirection,
+              })
+            }}
           />
         )}
         <InstrumentPanel
