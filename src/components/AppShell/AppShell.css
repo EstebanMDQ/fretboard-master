@@ -1,10 +1,11 @@
 .app-shell {
   display: grid;
   grid-template-columns: 260px 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
-    'header header'
-    'panel  main';
+    'header  header'
+    'global  global'
+    'panel   main';
   min-height: 100svh;
 }
 
@@ -20,11 +21,30 @@
   font-weight: 600;
 }
 
+.app-shell__global-controls {
+  grid-area: global;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 16px;
+}
+
+.app-shell__display-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .app-shell__panel {
   grid-area: panel;
   padding: 20px;
   border-right: 1px solid var(--border);
   background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .app-shell__main {
@@ -41,6 +61,7 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       'header'
+      'global'
       'panel'
       'main';
   }
