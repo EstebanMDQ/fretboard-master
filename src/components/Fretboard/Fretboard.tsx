@@ -34,7 +34,8 @@ export function Fretboard({ config, markers }: FretboardProps) {
   const boardHeight = VIEWBOX_HEIGHT - MARGIN_Y * 2
   const stringSpacing = stringCount > 1 ? boardHeight / (stringCount - 1) : 0
 
-  const stringY = (stringIndex: number) => MARGIN_Y + boardHeight - stringIndex * stringSpacing
+  // String 1 (index 0) renders at the top, matching standard tab/fretboard-diagram convention.
+  const stringY = (stringIndex: number) => MARGIN_Y + stringIndex * stringSpacing
   const fretX = (fret: number) => MARGIN_X + fretXFraction(fret, config.fretCount) * boardWidth
 
   const markerByPosition = new Map<string, Marker>()

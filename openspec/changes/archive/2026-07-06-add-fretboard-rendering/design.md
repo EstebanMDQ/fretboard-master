@@ -23,7 +23,7 @@ The app shell exists but renders only placeholders. This change adds the note ma
 - **Fretboard component contract**: `<Fretboard config={instrument} markers={Marker[]} />` where `Marker = { string, fret, label, emphasis }`. The `Fretboard` has zero knowledge of scales or chords - it only draws what it's given.
 - **Shared helper**: `positionsForPitchClasses(config, pitchClasses)` lives in the theory layer and is reused by both the scale and arpeggio marker builders added in later changes.
 - **Fret spacing**: equal-temperament formula, `position ∝ 1 - 2^(-fret/12)`, with a linear fallback constant for degenerate configs.
-- **Layout**: horizontal, nut on the left. Strings are rendered in physical config order (the first configured string at the bottom) - not sorted by pitch. This matters for reentrant tunings such as ukulele high-G.
+- **Layout**: horizontal, nut on the left. Strings are rendered in physical config order (the first configured string at the top, matching standard tab/fretboard-diagram convention) - not sorted by pitch. This matters for reentrant tunings such as ukulele high-G.
 - **Persistence**: instrument config is stored under the versioned `localStorage` key `fretboard-master:config:v1`. Invalid or missing data falls back to standard guitar tuning.
 
 ## Directory layout
