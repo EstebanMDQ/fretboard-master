@@ -1,0 +1,19 @@
+schema: spec-driven
+
+context: |
+  Project: fretboard-master - a client-side webapp to study fretted instruments
+  by visualizing notes on a fretboard (scales, arpeggios, custom tunings).
+  Tech stack: TypeScript (strict mode, no `any`), React, Vite, SVG rendering.
+  No backend: pure static site, deployed to GitHub Pages via GitHub Actions.
+  Testing: Vitest for music-theory logic (note math, scales, chords).
+  Conventions: simple solutions over clever ones, concise commit messages.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours

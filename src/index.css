@@ -1,0 +1,37 @@
+:root {
+  --bg: #ffffff;
+  --bg-panel: #f4f3ec;
+  --text: #16171d;
+  --text-muted: #6b6375;
+  --border: #e5e4e7;
+  --accent: #aa3bff;
+
+  color-scheme: light dark;
+  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16171d;
+    --bg-panel: #1f2028;
+    --text: #f3f4f6;
+    --text-muted: #9ca3af;
+    --border: #2e303a;
+    --accent: #c084fc;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+}
