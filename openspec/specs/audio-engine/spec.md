@@ -11,20 +11,16 @@ The system SHALL create the `AudioContext` lazily and resume it only on the firs
 - **THEN** the `AudioContext` is created/resumed at that point, not before
 
 ### Requirement: Lookahead scheduling
-The system SHALL provide a generic `schedule(events)` API using a lookahead scheduler: a timer wakes at a short fixed interval (~25ms) and schedules any events falling within a short lookahead window (~100ms) using the `AudioContext` clock.
+The system SHALL provide a generic `schedule(events)` API using a lookahead scheduler, reused by both the metronome and note-sequence playback features.
 
-#### Scenario: Sample-accurate timing
-- **WHEN** events are scheduled via `schedule(events)`
-- **THEN** their actual playback timing is keyed to `audioContext.currentTime`, not to `setInterval`/`setTimeout` firing time
-
-#### Scenario: Reused by note playback
-- **WHEN** a future feature needs to play a sequence of notes in time
-- **THEN** it can call the same `schedule(events)` API rather than implementing its own scheduler
+#### Scenario: Note sequence reuses the scheduler
+- **WHEN** a feature needs to play an ordered sequence of notes in time
+- **THEN** it schedules each note via the same `schedule(events)` API used by the metronome, rather than a separate timing mechanism
 
 ### Requirement: Reusable tone voice synthesis
-The system SHALL provide reusable voice-synthesis primitives for short percussive/tonal sounds with configurable frequency and decay.
+The system SHALL provide reusable voice-synthesis primitives for short percussive/tonal sounds with configurable frequency and decay, including a melodic note voice built from two detuned triangle oscillators through an exponential-decay envelope (fast attack ~5ms, decay over ~90% of the beat).
 
-#### Scenario: Click voice
-- **WHEN** the metronome schedules a click
-- **THEN** a short sine/square blip with fast exponential decay is produced at the requested frequency
+#### Scenario: Note voice
+- **WHEN** a melodic note is scheduled for playback
+- **THEN** it uses the shared note voice (two detuned triangle oscillators, exponential decay envelope) at the requested frequency
 
