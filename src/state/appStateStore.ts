@@ -9,6 +9,7 @@ import {
   type BeatAccent,
   type GapTrainingSettings,
 } from '../audio/metronome'
+import type { PlaybackDirection } from '../audio/notes'
 
 export type ActiveTool = 'scale' | 'arpeggio'
 
@@ -17,6 +18,7 @@ export interface ScaleToolState {
   isCustom: boolean
   presetIndex: number
   customIntervals: number[]
+  playbackDirection: PlaybackDirection
 }
 
 export interface ArpeggioToolState {
@@ -50,6 +52,7 @@ export type AppAction =
   | { type: 'selectScalePreset'; presetIndex: number }
   | { type: 'setCustomScaleMode' }
   | { type: 'toggleCustomScaleInterval'; interval: number }
+  | { type: 'setScalePlaybackDirection'; direction: PlaybackDirection }
   | { type: 'setArpeggioSymbol'; symbol: string }
   | { type: 'addNoteByNote'; spelling: Spelling }
   | { type: 'clearNoteByNote' }
@@ -65,6 +68,7 @@ function initScaleToolState(): ScaleToolState {
     isCustom: false,
     presetIndex: 0,
     customIntervals: [0],
+    playbackDirection: 'ascending',
   }
 }
 
@@ -95,6 +99,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         : [...current, interval].sort((a, b) => a - b)
       return { ...state, scaleTool: { ...state.scaleTool, customIntervals } }
     }
+    case 'setScalePlaybackDirection':
+      return { ...state, scaleTool: { ...state.scaleTool, playbackDirection: action.direction } }
     case 'setArpeggioSymbol':
       return { ...state, arpeggioTool: { ...state.arpeggioTool, symbolInput: action.symbol } }
     case 'addNoteByNote':

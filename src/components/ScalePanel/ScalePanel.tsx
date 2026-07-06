@@ -1,5 +1,6 @@
 import { STANDARD_SPELLINGS, spellingToLabel, type Spelling } from '../../theory/notes'
 import { SCALE_PRESETS } from '../../theory/scales'
+import type { PlaybackDirection } from '../../audio/notes'
 import type { ScaleToolState } from '../../state/appStateStore'
 import './ScalePanel.css'
 
@@ -9,6 +10,9 @@ interface ScalePanelProps {
   onPresetChange: (presetIndex: number) => void
   onCustomMode: () => void
   onToggleCustomInterval: (interval: number) => void
+  onDirectionChange: (direction: PlaybackDirection) => void
+  isPlaying: boolean
+  onPlay: () => void
 }
 
 function spellingKey(spelling: Spelling): string {
@@ -21,6 +25,9 @@ export function ScalePanel({
   onPresetChange,
   onCustomMode,
   onToggleCustomInterval,
+  onDirectionChange,
+  isPlaying,
+  onPlay,
 }: ScalePanelProps) {
   return (
     <div className="scale-panel">
@@ -80,6 +87,23 @@ export function ScalePanel({
           ))}
         </fieldset>
       )}
+
+      <div className="scale-panel__playback">
+        <label className="scale-panel__field">
+          Direction
+          <select
+            value={scaleTool.playbackDirection}
+            onChange={(e) => onDirectionChange(e.target.value as PlaybackDirection)}
+          >
+            <option value="ascending">Ascending</option>
+            <option value="descending">Descending</option>
+            <option value="both">Both</option>
+          </select>
+        </label>
+        <button type="button" className="scale-panel__play" onClick={onPlay}>
+          {isPlaying ? 'Restart' : 'Play'}
+        </button>
+      </div>
     </div>
   )
 }

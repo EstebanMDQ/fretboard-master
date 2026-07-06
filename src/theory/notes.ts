@@ -11,6 +11,9 @@ export interface Marker {
   fret: number
   label: string
   emphasis: boolean
+  /** Relative interval (0-11) from the root; lets playback sync pulse every marker sharing a sounding degree. */
+  degree?: number
+  pulsing?: boolean
 }
 
 const LETTER_ORDER: Letter[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B']

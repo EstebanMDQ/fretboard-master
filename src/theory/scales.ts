@@ -37,6 +37,7 @@ export function buildMarkers(
       fret: position.fret,
       label,
       emphasis: relativeInterval === 0,
+      degree: relativeInterval,
     }
   })
 }

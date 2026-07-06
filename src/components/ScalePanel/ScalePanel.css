@@ -35,3 +35,20 @@
   gap: 4px;
   font-size: 13px;
 }
+
+.scale-panel__playback {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scale-panel__play {
+  align-self: flex-start;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 16px;
+  cursor: pointer;
+}

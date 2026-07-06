@@ -76,11 +76,15 @@ export function Fretboard({ config, markers }: FretboardProps) {
           if (!marker) return null
           const x = fret === 0 ? fretX(0) + 12 : (fretX(fret) + fretX(fret - 1)) / 2
           const y = stringY(stringIndex)
+          const className = [
+            'fretboard__marker',
+            marker.emphasis && 'fretboard__marker--emphasis',
+            marker.pulsing && 'fretboard__marker--pulsing',
+          ]
+            .filter(Boolean)
+            .join(' ')
           return (
-            <g
-              key={markerKey(stringIndex, fret)}
-              className={marker.emphasis ? 'fretboard__marker fretboard__marker--emphasis' : 'fretboard__marker'}
-            >
+            <g key={markerKey(stringIndex, fret)} className={className}>
               <circle cx={x} cy={y} r={12} />
               <text x={x} y={y}>
                 {marker.label}
