@@ -59,7 +59,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
       </label>
 
       <fieldset className="instrument-panel__strings">
-        <legend>Strings (1 = bottom)</legend>
+        <legend>Strings (1 = top)</legend>
         {config.strings.map((stringConfig, index) => (
           <div key={index} className="instrument-panel__string-row">
             <span>{index + 1}</span>
