@@ -1,7 +1,12 @@
 import { AppShell } from './components/AppShell/AppShell'
+import { AppStateProvider } from './state/AppStateProvider'
 
 function App() {
-  return <AppShell />
+  return (
+    <AppStateProvider>
+      <AppShell />
+    </AppStateProvider>
+  )
 }
 
 export default App

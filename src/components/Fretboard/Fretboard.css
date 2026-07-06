@@ -1,0 +1,42 @@
+.fretboard {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fretboard__nut {
+  stroke: var(--text);
+  stroke-width: 4;
+}
+
+.fretboard__fret {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.fretboard__string {
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+}
+
+.fretboard__marker circle {
+  fill: var(--bg);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.fretboard__marker--emphasis circle {
+  fill: var(--accent);
+}
+
+.fretboard__marker text {
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--text);
+  pointer-events: none;
+}
+
+.fretboard__marker--emphasis text {
+  fill: var(--bg);
+}
