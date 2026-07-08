@@ -14,6 +14,8 @@ export interface Marker {
   /** Relative interval (0-11) from the root; lets playback sync pulse every marker sharing a sounding degree. */
   degree?: number
   pulsing?: boolean
+  /** Set on chord-shape extension tones (7ths, 9ths, ...) so they render distinctly from core triad tones. */
+  extension?: boolean
 }
 
 const LETTER_ORDER: Letter[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B']

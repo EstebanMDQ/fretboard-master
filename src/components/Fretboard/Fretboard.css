@@ -41,6 +41,18 @@
   fill: var(--bg);
 }
 
+/* Chord-shape extension tones (7ths, 9ths, ...): subdued and dashed, clearly optional vs the core triad. */
+.fretboard__marker--extension circle {
+  fill: var(--bg);
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+
+.fretboard__marker--extension text {
+  fill: var(--text-muted);
+}
+
 .fretboard__marker--pulsing circle {
   animation: fretboard-pulse 0.3s ease-out;
 }

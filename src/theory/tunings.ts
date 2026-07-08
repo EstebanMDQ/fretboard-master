@@ -91,6 +91,20 @@ export const BUILT_IN_TUNINGS: NamedTuning[] = [
   { name: 'Guitar (7-string)', config: GUITAR_7_STANDARD },
 ]
 
+/** Open pitch classes of standard 6-string guitar tuning, high-to-low: E B G D A E. */
+const STANDARD_GUITAR_PITCH_CLASSES = [4, 11, 7, 2, 9, 4]
+
+/**
+ * True when the config is standard 6-string guitar tuning by open pitch class (octave ignored).
+ * CAGED shape geometry is pitch-class based, so this is the gate for the Chords tool.
+ */
+export function isStandardGuitarTuning(config: InstrumentConfig): boolean {
+  if (config.strings.length !== STANDARD_GUITAR_PITCH_CLASSES.length) return false
+  return config.strings.every(
+    (string, index) => pitchClassOfSpelling(string.spelling) === STANDARD_GUITAR_PITCH_CLASSES[index],
+  )
+}
+
 export function positionsForPitchClasses(config: InstrumentConfig, pitchClasses: number[]): FretboardPosition[] {
   const targetSet = new Set(pitchClasses.map((pitchClass) => ((pitchClass % 12) + 12) % 12))
   const positions: FretboardPosition[] = []

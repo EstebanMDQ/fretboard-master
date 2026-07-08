@@ -80,6 +80,7 @@ export function Fretboard({ config, markers }: FretboardProps) {
           const className = [
             'fretboard__marker',
             marker.emphasis && 'fretboard__marker--emphasis',
+            marker.extension && 'fretboard__marker--extension',
             marker.pulsing && 'fretboard__marker--pulsing',
           ]
             .filter(Boolean)

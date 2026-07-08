@@ -12,7 +12,7 @@ import {
 } from '../audio/metronome'
 import type { PlaybackDirection } from '../audio/notes'
 
-export type ActiveTool = 'scale' | 'arpeggio'
+export type ActiveTool = 'scale' | 'arpeggio' | 'chords'
 
 export interface ScaleToolState {
   root: Spelling
@@ -26,6 +26,11 @@ export interface ArpeggioToolState {
   symbolInput: string
   noteByNote: Spelling[]
   playbackDirection: PlaybackDirection
+}
+
+export interface ChordsToolState {
+  symbolInput: string
+  positionIndex: number
 }
 
 export interface MetronomeToolState {
@@ -43,6 +48,7 @@ export interface AppState {
   activeTool: ActiveTool
   scaleTool: ScaleToolState
   arpeggioTool: ArpeggioToolState
+  chordsTool: ChordsToolState
   tempoBpm: number
   metronome: MetronomeToolState
 }
@@ -60,6 +66,8 @@ export type AppAction =
   | { type: 'addNoteByNote'; spelling: Spelling }
   | { type: 'clearNoteByNote' }
   | { type: 'setArpeggioPlaybackDirection'; direction: PlaybackDirection }
+  | { type: 'setChordSymbol'; symbol: string }
+  | { type: 'setChordPosition'; positionIndex: number }
   | { type: 'setTempoBpm'; tempoBpm: number }
   | { type: 'setMeter'; numerator: number; denominator: 2 | 4 | 8 | 16 }
   | { type: 'cycleBeatAccent'; index: number }
@@ -80,6 +88,10 @@ function initScaleToolState(): ScaleToolState {
 
 function initArpeggioToolState(): ArpeggioToolState {
   return { symbolInput: '', noteByNote: [], playbackDirection: 'ascending' }
+}
+
+function initChordsToolState(): ChordsToolState {
+  return { symbolInput: '', positionIndex: 0 }
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -118,6 +130,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, arpeggioTool: { ...state.arpeggioTool, noteByNote: [] } }
     case 'setArpeggioPlaybackDirection':
       return { ...state, arpeggioTool: { ...state.arpeggioTool, playbackDirection: action.direction } }
+    case 'setChordSymbol':
+      // Changing the chord invalidates the current position, so reset to the first shape.
+      return { ...state, chordsTool: { symbolInput: action.symbol, positionIndex: 0 } }
+    case 'setChordPosition':
+      return { ...state, chordsTool: { ...state.chordsTool, positionIndex: action.positionIndex } }
     case 'setTempoBpm':
       return { ...state, tempoBpm: Math.min(300, Math.max(30, action.tempoBpm)) }
     case 'setMeter':
@@ -157,6 +174,7 @@ export function initAppState(): AppState {
     activeTool: 'scale',
     scaleTool: initScaleToolState(),
     arpeggioTool: initArpeggioToolState(),
+    chordsTool: initChordsToolState(),
     tempoBpm: storedMetronome.tempoBpm,
     metronome: {
       numerator: storedMetronome.numerator,

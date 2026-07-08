@@ -3,17 +3,20 @@ import { Fretboard } from '../Fretboard/Fretboard'
 import { InstrumentPanel } from '../InstrumentPanel/InstrumentPanel'
 import { ScalePanel } from '../ScalePanel/ScalePanel'
 import { ArpeggioPanel } from '../ArpeggioPanel/ArpeggioPanel'
+import { ChordsPanel } from '../ChordsPanel/ChordsPanel'
 import { MetronomePanel } from '../MetronomePanel/MetronomePanel'
 import { buildMarkers, SCALE_PRESETS } from '../../theory/scales'
 import { fallbackDegreeLabel } from '../../theory/degrees'
 import { resolveArpeggioChord } from '../../theory/chordParser'
+import { buildCagedPositions } from '../../theory/cagedShapes'
 import type { Marker } from '../../theory/notes'
 import { useSequencePlayback } from '../../audio/useSequencePlayback'
 import { useAppDispatch, useAppState } from '../../state/useAppState'
 import './AppShell.css'
 
 export function AppShell() {
-  const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool, tempoBpm, metronome } = useAppState()
+  const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool, chordsTool, tempoBpm, metronome } =
+    useAppState()
   const dispatch = useAppDispatch()
   const notePlayback = useSequencePlayback()
 
@@ -25,6 +28,13 @@ export function AppShell() {
     : SCALE_PRESETS[scaleTool.presetIndex].degreeLabels
 
   const chord = resolveArpeggioChord(arpeggioTool.symbolInput, arpeggioTool.noteByNote)
+
+  const cagedResult = buildCagedPositions(instrumentConfig, chordsTool.symbolInput, displayMode)
+  const cagedPositions = cagedResult.supported ? cagedResult.positions : []
+  const currentCagedPosition =
+    cagedPositions.length > 0
+      ? cagedPositions[Math.min(chordsTool.positionIndex, cagedPositions.length - 1)]
+      : null
 
   // Interruption rules: changing scale/chord, root, tuning, or switching tools stops playback.
   const stopPlaybackRef = useRef(notePlayback.stop)
@@ -42,13 +52,18 @@ export function AppShell() {
     scaleTool.customIntervals,
     arpeggioTool.symbolInput,
     arpeggioTool.noteByNote,
+    chordsTool.symbolInput,
   ])
 
   let markers: Marker[] = []
   if (activeTool === 'scale') {
     markers = buildMarkers(instrumentConfig, scaleTool.root, scaleIntervals, scaleDegreeLabels, displayMode)
-  } else if (chord) {
-    markers = buildMarkers(instrumentConfig, chord.root, chord.intervals, chord.degreeLabels, displayMode)
+  } else if (activeTool === 'arpeggio') {
+    if (chord) {
+      markers = buildMarkers(instrumentConfig, chord.root, chord.intervals, chord.degreeLabels, displayMode)
+    }
+  } else if (currentCagedPosition) {
+    markers = currentCagedPosition.markers
   }
   if (notePlayback.isPlaying && notePlayback.currentInterval !== null) {
     markers = markers.map((marker) => ({ ...marker, pulsing: marker.degree === notePlayback.currentInterval }))
@@ -75,6 +90,13 @@ export function AppShell() {
             onClick={() => dispatch({ type: 'setActiveTool', tool: 'arpeggio' })}
           >
             Arpeggios
+          </button>
+          <button
+            type="button"
+            className={activeTool === 'chords' ? 'app-shell__tab app-shell__tab--active' : 'app-shell__tab'}
+            onClick={() => dispatch({ type: 'setActiveTool', tool: 'chords' })}
+          >
+            Chords
           </button>
         </nav>
 
@@ -103,7 +125,7 @@ export function AppShell() {
       </div>
 
       <aside className="app-shell__panel" aria-label="Controls">
-        {activeTool === 'scale' ? (
+        {activeTool === 'scale' && (
           <ScalePanel
             scaleTool={scaleTool}
             onRootChange={(root) => dispatch({ type: 'setScaleRoot', root })}
@@ -121,7 +143,8 @@ export function AppShell() {
               })
             }
           />
-        ) : (
+        )}
+        {activeTool === 'arpeggio' && (
           <ArpeggioPanel
             arpeggioTool={arpeggioTool}
             onSymbolChange={(symbol) => dispatch({ type: 'setArpeggioSymbol', symbol })}
@@ -139,6 +162,15 @@ export function AppShell() {
                 direction: arpeggioTool.playbackDirection,
               })
             }}
+          />
+        )}
+        {activeTool === 'chords' && (
+          <ChordsPanel
+            symbolInput={chordsTool.symbolInput}
+            result={cagedResult}
+            positionIndex={chordsTool.positionIndex}
+            onSymbolChange={(symbol) => dispatch({ type: 'setChordSymbol', symbol })}
+            onPositionChange={(positionIndex) => dispatch({ type: 'setChordPosition', positionIndex })}
           />
         )}
         <InstrumentPanel
