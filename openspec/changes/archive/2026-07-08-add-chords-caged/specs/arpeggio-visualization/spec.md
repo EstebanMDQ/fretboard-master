@@ -1,3 +1,8 @@
+## RENAMED Requirements
+
+- FROM: `### Requirement: Two-tab tool navigation with independent state`
+- TO: `### Requirement: Multi-tab tool navigation with independent state`
+
 ## MODIFIED Requirements
 
 ### Requirement: Multi-tab tool navigation with independent state
