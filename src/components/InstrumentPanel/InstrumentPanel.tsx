@@ -1,5 +1,15 @@
+import { useState } from 'react'
 import { STANDARD_SPELLINGS, spellingToLabel, type Spelling } from '../../theory/notes'
-import { GUITAR_STANDARD, UKULELE_STANDARD, type InstrumentConfig, type StringConfig } from '../../theory/tunings'
+import {
+  BUILT_IN_TUNINGS,
+  deleteTuning,
+  loadSavedTunings,
+  saveSavedTunings,
+  upsertTuning,
+  type InstrumentConfig,
+  type NamedTuning,
+  type StringConfig,
+} from '../../theory/tunings'
 import './InstrumentPanel.css'
 
 interface InstrumentPanelProps {
@@ -20,6 +30,21 @@ function findSpelling(key: string): Spelling {
 const DEFAULT_NEW_STRING: StringConfig = { spelling: { letter: 'E', accidental: 0 }, octave: 3 }
 
 export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
+  const [savedTunings, setSavedTunings] = useState<NamedTuning[]>(() => loadSavedTunings())
+  const [newName, setNewName] = useState('')
+
+  function persist(next: NamedTuning[]) {
+    setSavedTunings(next)
+    saveSavedTunings(next)
+  }
+
+  function saveCurrent() {
+    const name = newName.trim()
+    if (!name) return
+    persist(upsertTuning(savedTunings, { name, config }))
+    setNewName('')
+  }
+
   function updateString(index: number, patch: Partial<StringConfig>) {
     const strings = config.strings.map((stringConfig, i) => (i === index ? { ...stringConfig, ...patch } : stringConfig))
     onChange({ ...config, strings })
@@ -39,12 +64,50 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
       <h2>Instrument</h2>
 
       <div className="instrument-panel__presets">
-        <button type="button" onClick={() => onChange(GUITAR_STANDARD)}>
-          Guitar
-        </button>
-        <button type="button" onClick={() => onChange(UKULELE_STANDARD)}>
-          Ukulele
-        </button>
+        {BUILT_IN_TUNINGS.map((tuning) => (
+          <button key={tuning.name} type="button" onClick={() => onChange(tuning.config)}>
+            {tuning.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="instrument-panel__library">
+        <div className="instrument-panel__save-row">
+          <input
+            type="text"
+            placeholder="Name this tuning"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveCurrent()
+            }}
+          />
+          <button type="button" onClick={saveCurrent} disabled={newName.trim() === ''}>
+            Save
+          </button>
+        </div>
+        {savedTunings.length > 0 && (
+          <ul className="instrument-panel__saved">
+            {savedTunings.map((tuning) => (
+              <li key={tuning.name} className="instrument-panel__saved-row">
+                <button
+                  type="button"
+                  className="instrument-panel__saved-load"
+                  onClick={() => onChange(tuning.config)}
+                >
+                  {tuning.name}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => persist(deleteTuning(savedTunings, tuning.name))}
+                  aria-label={`Delete tuning ${tuning.name}`}
+                >
+                  &times;
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <label className="instrument-panel__field">

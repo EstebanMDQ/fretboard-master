@@ -8,8 +8,52 @@
 
 .instrument-panel__presets {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.instrument-panel__library {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.instrument-panel__save-row {
+  display: flex;
+  gap: 8px;
+}
+
+.instrument-panel__save-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.instrument-panel__saved {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.instrument-panel__saved-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.instrument-panel__saved-load {
+  flex: 1;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
 }
 
 .instrument-panel__field {

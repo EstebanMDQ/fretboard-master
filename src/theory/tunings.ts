@@ -40,6 +40,57 @@ export const UKULELE_STANDARD: InstrumentConfig = {
   fretCount: 12,
 }
 
+/** 4-string bass, standard EADG, one octave below the guitar's bottom four strings. */
+export const BASS_4_STANDARD: InstrumentConfig = {
+  strings: [
+    { spelling: { letter: 'G', accidental: 0 }, octave: 2 },
+    { spelling: { letter: 'D', accidental: 0 }, octave: 2 },
+    { spelling: { letter: 'A', accidental: 0 }, octave: 1 },
+    { spelling: { letter: 'E', accidental: 0 }, octave: 1 },
+  ],
+  fretCount: 24,
+}
+
+/** 5-string bass: 4-string bass with a low B added below the E. */
+export const BASS_5_STANDARD: InstrumentConfig = {
+  strings: [
+    { spelling: { letter: 'G', accidental: 0 }, octave: 2 },
+    { spelling: { letter: 'D', accidental: 0 }, octave: 2 },
+    { spelling: { letter: 'A', accidental: 0 }, octave: 1 },
+    { spelling: { letter: 'E', accidental: 0 }, octave: 1 },
+    { spelling: { letter: 'B', accidental: 0 }, octave: 0 },
+  ],
+  fretCount: 24,
+}
+
+/** 7-string guitar: standard guitar tuning with a low B added below the low E. */
+export const GUITAR_7_STANDARD: InstrumentConfig = {
+  strings: [
+    { spelling: { letter: 'E', accidental: 0 }, octave: 4 },
+    { spelling: { letter: 'B', accidental: 0 }, octave: 3 },
+    { spelling: { letter: 'G', accidental: 0 }, octave: 3 },
+    { spelling: { letter: 'D', accidental: 0 }, octave: 3 },
+    { spelling: { letter: 'A', accidental: 0 }, octave: 2 },
+    { spelling: { letter: 'E', accidental: 0 }, octave: 2 },
+    { spelling: { letter: 'B', accidental: 0 }, octave: 1 },
+  ],
+  fretCount: 24,
+}
+
+export interface NamedTuning {
+  name: string
+  config: InstrumentConfig
+}
+
+/** Built-in presets, rendered in order as quick-select buttons. */
+export const BUILT_IN_TUNINGS: NamedTuning[] = [
+  { name: 'Guitar', config: GUITAR_STANDARD },
+  { name: 'Ukulele', config: UKULELE_STANDARD },
+  { name: 'Bass (4-string)', config: BASS_4_STANDARD },
+  { name: 'Bass (5-string)', config: BASS_5_STANDARD },
+  { name: 'Guitar (7-string)', config: GUITAR_7_STANDARD },
+]
+
 export function positionsForPitchClasses(config: InstrumentConfig, pitchClasses: number[]): FretboardPosition[] {
   const targetSet = new Set(pitchClasses.map((pitchClass) => ((pitchClass % 12) + 12) % 12))
   const positions: FretboardPosition[] = []
@@ -108,4 +159,44 @@ export function saveInstrumentConfig(config: InstrumentConfig): void {
   } catch {
     // localStorage unavailable (private browsing, quota exceeded) - config just won't persist
   }
+}
+
+const TUNINGS_STORAGE_KEY = 'fretboard-master:tunings:v1'
+
+function isValidNamedTuning(value: unknown): value is NamedTuning {
+  if (typeof value !== 'object' || value === null) return false
+  const entry = value as Record<string, unknown>
+  return typeof entry.name === 'string' && entry.name.trim().length > 0 && isValidInstrumentConfig(entry.config)
+}
+
+/** Loads the user's saved tuning library, skipping any entries that fail validation. */
+export function loadSavedTunings(): NamedTuning[] {
+  try {
+    const raw = localStorage.getItem(TUNINGS_STORAGE_KEY)
+    if (!raw) return []
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(isValidNamedTuning)
+  } catch {
+    return []
+  }
+}
+
+export function saveSavedTunings(tunings: NamedTuning[]): void {
+  try {
+    localStorage.setItem(TUNINGS_STORAGE_KEY, JSON.stringify(tunings))
+  } catch {
+    // localStorage unavailable - saved tunings just won't persist
+  }
+}
+
+/** Adds an entry, replacing any existing entry with the same name. */
+export function upsertTuning(list: NamedTuning[], entry: NamedTuning): NamedTuning[] {
+  const index = list.findIndex((tuning) => tuning.name === entry.name)
+  if (index === -1) return [...list, entry]
+  return list.map((tuning, i) => (i === index ? entry : tuning))
+}
+
+export function deleteTuning(list: NamedTuning[], name: string): NamedTuning[] {
+  return list.filter((tuning) => tuning.name !== name)
 }
