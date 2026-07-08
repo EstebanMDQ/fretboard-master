@@ -12,7 +12,9 @@ import {
 } from '../audio/metronome'
 import type { PlaybackDirection } from '../audio/notes'
 
-export type ActiveTool = 'scale' | 'arpeggio' | 'chords'
+export type ActiveTool = 'scale' | 'arpeggio' | 'chords' | 'voicings'
+
+export type VoicingFilter = 'open-strings' | 'spread' | 'close' | 'rootless' | 'no-fifth' | 'string-skip' | 'stretch'
 
 export interface ScaleToolState {
   root: Spelling
@@ -33,6 +35,12 @@ export interface ChordsToolState {
   positionIndex: number
 }
 
+export interface VoicingsToolState {
+  symbolInput: string
+  filters: VoicingFilter[]
+  selectedIndex: number
+}
+
 export interface MetronomeToolState {
   numerator: number
   denominator: 2 | 4 | 8 | 16
@@ -49,6 +57,7 @@ export interface AppState {
   scaleTool: ScaleToolState
   arpeggioTool: ArpeggioToolState
   chordsTool: ChordsToolState
+  voicingsTool: VoicingsToolState
   tempoBpm: number
   metronome: MetronomeToolState
 }
@@ -68,6 +77,9 @@ export type AppAction =
   | { type: 'setArpeggioPlaybackDirection'; direction: PlaybackDirection }
   | { type: 'setChordSymbol'; symbol: string }
   | { type: 'setChordPosition'; positionIndex: number }
+  | { type: 'setVoicingSymbol'; symbol: string }
+  | { type: 'toggleVoicingFilter'; filter: VoicingFilter }
+  | { type: 'setVoicingSelection'; selectedIndex: number }
   | { type: 'setTempoBpm'; tempoBpm: number }
   | { type: 'setMeter'; numerator: number; denominator: 2 | 4 | 8 | 16 }
   | { type: 'cycleBeatAccent'; index: number }
@@ -92,6 +104,10 @@ function initArpeggioToolState(): ArpeggioToolState {
 
 function initChordsToolState(): ChordsToolState {
   return { symbolInput: '', positionIndex: 0 }
+}
+
+function initVoicingsToolState(): VoicingsToolState {
+  return { symbolInput: '', filters: [], selectedIndex: 0 }
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -135,6 +151,19 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, chordsTool: { symbolInput: action.symbol, positionIndex: 0 } }
     case 'setChordPosition':
       return { ...state, chordsTool: { ...state.chordsTool, positionIndex: action.positionIndex } }
+    case 'setVoicingSymbol':
+      // Changing the chord invalidates the current selection.
+      return { ...state, voicingsTool: { ...state.voicingsTool, symbolInput: action.symbol, selectedIndex: 0 } }
+    case 'toggleVoicingFilter': {
+      const { filter } = action
+      const filters = state.voicingsTool.filters.includes(filter)
+        ? state.voicingsTool.filters.filter((value) => value !== filter)
+        : [...state.voicingsTool.filters, filter]
+      // Changing the visible set invalidates the current selection.
+      return { ...state, voicingsTool: { ...state.voicingsTool, filters, selectedIndex: 0 } }
+    }
+    case 'setVoicingSelection':
+      return { ...state, voicingsTool: { ...state.voicingsTool, selectedIndex: action.selectedIndex } }
     case 'setTempoBpm':
       return { ...state, tempoBpm: Math.min(300, Math.max(30, action.tempoBpm)) }
     case 'setMeter':
@@ -175,6 +204,7 @@ export function initAppState(): AppState {
     scaleTool: initScaleToolState(),
     arpeggioTool: initArpeggioToolState(),
     chordsTool: initChordsToolState(),
+    voicingsTool: initVoicingsToolState(),
     tempoBpm: storedMetronome.tempoBpm,
     metronome: {
       numerator: storedMetronome.numerator,

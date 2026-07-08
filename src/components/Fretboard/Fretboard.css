@@ -53,6 +53,13 @@
   fill: var(--text-muted);
 }
 
+.fretboard__muted {
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--text-muted);
+}
+
 .fretboard__marker--pulsing circle {
   animation: fretboard-pulse 0.3s ease-out;
 }

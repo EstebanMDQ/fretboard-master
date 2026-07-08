@@ -5,6 +5,8 @@ import './Fretboard.css'
 interface FretboardProps {
   config: InstrumentConfig
   markers: Marker[]
+  /** String indices to mark as not played (an "x" left of the nut), for projected chord voicings. */
+  mutedStrings?: number[]
 }
 
 const VIEWBOX_WIDTH = 900
@@ -28,7 +30,7 @@ function markerKey(stringIndex: number, fret: number): string {
   return `${stringIndex}:${fret}`
 }
 
-export function Fretboard({ config, markers }: FretboardProps) {
+export function Fretboard({ config, markers, mutedStrings = [] }: FretboardProps) {
   const stringCount = config.strings.length
   const boardWidth = VIEWBOX_WIDTH - MARGIN_X * 2
   const boardHeight = VIEWBOX_HEIGHT - MARGIN_Y * 2
@@ -44,6 +46,7 @@ export function Fretboard({ config, markers }: FretboardProps) {
   })
 
   const frets = Array.from({ length: config.fretCount }, (_, i) => i + 1)
+  const mutedSet = new Set(mutedStrings)
 
   return (
     <svg className="fretboard" viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`} role="img" aria-label="Fretboard">
@@ -70,6 +73,19 @@ export function Fretboard({ config, markers }: FretboardProps) {
           className="fretboard__string"
         />
       ))}
+
+      {config.strings.map((_, stringIndex) =>
+        mutedSet.has(stringIndex) ? (
+          <text
+            key={`muted-${stringIndex}`}
+            className="fretboard__muted"
+            x={fretX(0) - 14}
+            y={stringY(stringIndex)}
+          >
+            ×
+          </text>
+        ) : null,
+      )}
 
       {config.strings.map((_, stringIndex) =>
         [0, ...frets].map((fret) => {

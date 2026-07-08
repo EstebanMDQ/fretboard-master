@@ -4,18 +4,20 @@ import { InstrumentPanel } from '../InstrumentPanel/InstrumentPanel'
 import { ScalePanel } from '../ScalePanel/ScalePanel'
 import { ArpeggioPanel } from '../ArpeggioPanel/ArpeggioPanel'
 import { ChordsPanel } from '../ChordsPanel/ChordsPanel'
+import { VoicingsPanel } from '../VoicingsPanel/VoicingsPanel'
 import { MetronomePanel } from '../MetronomePanel/MetronomePanel'
 import { buildMarkers, SCALE_PRESETS } from '../../theory/scales'
 import { fallbackDegreeLabel } from '../../theory/degrees'
 import { resolveArpeggioChord } from '../../theory/chordParser'
 import { buildCagedPositions } from '../../theory/cagedShapes'
+import { findVoicings } from '../../theory/voicings'
 import type { Marker } from '../../theory/notes'
 import { useSequencePlayback } from '../../audio/useSequencePlayback'
 import { useAppDispatch, useAppState } from '../../state/useAppState'
 import './AppShell.css'
 
 export function AppShell() {
-  const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool, chordsTool, tempoBpm, metronome } =
+  const { instrumentConfig, displayMode, activeTool, scaleTool, arpeggioTool, chordsTool, voicingsTool, tempoBpm, metronome } =
     useAppState()
   const dispatch = useAppDispatch()
   const notePlayback = useSequencePlayback()
@@ -36,6 +38,15 @@ export function AppShell() {
       ? cagedPositions[Math.min(chordsTool.positionIndex, cagedPositions.length - 1)]
       : null
 
+  const voicingsResult = findVoicings(instrumentConfig, voicingsTool.symbolInput)
+  const visibleVoicings = voicingsResult.voicings.filter((voicing) =>
+    voicingsTool.filters.every((filter) => voicing.tags.includes(filter)),
+  )
+  const currentVoicing =
+    visibleVoicings.length > 0
+      ? visibleVoicings[Math.min(voicingsTool.selectedIndex, visibleVoicings.length - 1)]
+      : null
+
   // Interruption rules: changing scale/chord, root, tuning, or switching tools stops playback.
   const stopPlaybackRef = useRef(notePlayback.stop)
   useEffect(() => {
@@ -53,17 +64,23 @@ export function AppShell() {
     arpeggioTool.symbolInput,
     arpeggioTool.noteByNote,
     chordsTool.symbolInput,
+    voicingsTool.symbolInput,
   ])
 
   let markers: Marker[] = []
+  let mutedStrings: number[] = []
   if (activeTool === 'scale') {
     markers = buildMarkers(instrumentConfig, scaleTool.root, scaleIntervals, scaleDegreeLabels, displayMode)
   } else if (activeTool === 'arpeggio') {
     if (chord) {
       markers = buildMarkers(instrumentConfig, chord.root, chord.intervals, chord.degreeLabels, displayMode)
     }
-  } else if (currentCagedPosition) {
-    markers = currentCagedPosition.markers
+  } else if (activeTool === 'chords') {
+    if (currentCagedPosition) markers = currentCagedPosition.markers
+  } else if (currentVoicing) {
+    // Voicings always render as scale degrees, regardless of the global label toggle.
+    markers = currentVoicing.markers
+    mutedStrings = currentVoicing.mutedStrings
   }
   if (notePlayback.isPlaying && notePlayback.currentInterval !== null) {
     markers = markers.map((marker) => ({ ...marker, pulsing: marker.degree === notePlayback.currentInterval }))
@@ -97,6 +114,13 @@ export function AppShell() {
             onClick={() => dispatch({ type: 'setActiveTool', tool: 'chords' })}
           >
             Chords
+          </button>
+          <button
+            type="button"
+            className={activeTool === 'voicings' ? 'app-shell__tab app-shell__tab--active' : 'app-shell__tab'}
+            onClick={() => dispatch({ type: 'setActiveTool', tool: 'voicings' })}
+          >
+            Voicings
           </button>
         </nav>
 
@@ -173,13 +197,25 @@ export function AppShell() {
             onPositionChange={(positionIndex) => dispatch({ type: 'setChordPosition', positionIndex })}
           />
         )}
+        {activeTool === 'voicings' && (
+          <VoicingsPanel
+            symbolInput={voicingsTool.symbolInput}
+            result={voicingsResult}
+            visibleVoicings={visibleVoicings}
+            filters={voicingsTool.filters}
+            selectedIndex={voicingsTool.selectedIndex}
+            onSymbolChange={(symbol) => dispatch({ type: 'setVoicingSymbol', symbol })}
+            onToggleFilter={(filter) => dispatch({ type: 'toggleVoicingFilter', filter })}
+            onSelect={(selectedIndex) => dispatch({ type: 'setVoicingSelection', selectedIndex })}
+          />
+        )}
         <InstrumentPanel
           config={instrumentConfig}
           onChange={(config) => dispatch({ type: 'setInstrumentConfig', config })}
         />
       </aside>
       <main className="app-shell__main" aria-label="Fretboard">
-        <Fretboard config={instrumentConfig} markers={markers} />
+        <Fretboard config={instrumentConfig} markers={markers} mutedStrings={mutedStrings} />
       </main>
     </div>
   )
