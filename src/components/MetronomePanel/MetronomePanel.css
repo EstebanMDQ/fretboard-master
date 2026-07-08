@@ -1,3 +1,7 @@
+.metronome-panel {
+  position: relative;
+}
+
 .metronome-panel__toggle {
   background: transparent;
   border: none;
@@ -8,10 +12,21 @@
 }
 
 .metronome-panel__body {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 8px;
+  min-width: 240px;
+  max-width: min(320px, 90vw);
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .metronome-panel__field {
@@ -56,12 +71,26 @@
 }
 
 .metronome-panel__beat--mute {
-  opacity: 0.4;
+  opacity: 0.35;
+  border-style: dashed;
+  text-decoration: line-through;
 }
 
 .metronome-panel__beat--current {
   background: var(--accent);
   color: var(--bg);
+}
+
+.metronome-panel__hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.metronome-panel__pattern-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .metronome-panel__gap {

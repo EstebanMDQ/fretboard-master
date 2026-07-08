@@ -15,6 +15,7 @@ export interface MetronomeSettings {
   denominator: 2 | 4 | 8 | 16
   pattern: BeatAccent[]
   gapTraining: GapTrainingSettings | null
+  subdivision: Subdivision
 }
 
 /** Beat 1 is accented by default; 6/8, 9/8, and 12/8 accent each dotted-quarter group instead. */
@@ -29,6 +30,34 @@ export function cycleAccent(accent: BeatAccent): BeatAccent {
   if (accent === 'accent') return 'normal'
   if (accent === 'normal') return 'mute'
   return 'accent'
+}
+
+/** Only even-numbered beats (2, 4, ...) sound; falls back to the default when no even beat exists. */
+export function backbeatPattern(numerator: number): BeatAccent[] {
+  if (numerator < 2) return defaultPattern(numerator, 4)
+  return Array.from({ length: numerator }, (_, i): BeatAccent => ((i + 1) % 2 === 0 ? 'normal' : 'mute'))
+}
+
+/** Beat 1 accented, every other beat muted. */
+export function downbeatOnlyPattern(numerator: number): BeatAccent[] {
+  return Array.from({ length: numerator }, (_, i): BeatAccent => (i === 0 ? 'accent' : 'mute'))
+}
+
+export type Subdivision = 'quarter' | 'eighth' | 'triplet' | 'swing'
+
+/** Extra click offsets within one beat interval (as fractions of the beat), after the main click at 0. */
+export function subdivisionOffsets(subdivision: Subdivision): number[] {
+  switch (subdivision) {
+    case 'eighth':
+      return [0.5]
+    case 'triplet':
+      return [1 / 3, 2 / 3]
+    case 'swing':
+      return [2 / 3]
+    case 'quarter':
+    default:
+      return []
+  }
 }
 
 /** tempoBpm always refers to quarter-note beats; the click interval follows the meter's own denominator. */
@@ -50,10 +79,16 @@ export const DEFAULT_METRONOME_SETTINGS: MetronomeSettings = {
   denominator: 4,
   pattern: defaultPattern(4, 4),
   gapTraining: null,
+  subdivision: 'quarter',
 }
 
 const STORAGE_KEY = 'fretboard-master:metronome:v1'
 const VALID_DENOMINATORS = new Set([2, 4, 8, 16])
+const VALID_SUBDIVISIONS = new Set(['quarter', 'eighth', 'triplet', 'swing'])
+
+function isValidSubdivision(value: unknown): value is Subdivision {
+  return typeof value === 'string' && VALID_SUBDIVISIONS.has(value)
+}
 
 function isValidPattern(value: unknown): value is BeatAccent[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => v === 'accent' || v === 'normal' || v === 'mute')
@@ -79,7 +114,8 @@ function isValidSettings(value: unknown): value is MetronomeSettings {
     typeof settings.denominator === 'number' &&
     VALID_DENOMINATORS.has(settings.denominator) &&
     isValidPattern(settings.pattern) &&
-    isValidGapTraining(settings.gapTraining)
+    isValidGapTraining(settings.gapTraining) &&
+    (settings.subdivision === undefined || isValidSubdivision(settings.subdivision))
   )
 }
 
@@ -88,7 +124,9 @@ export function loadMetronomeSettings(): MetronomeSettings {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULT_METRONOME_SETTINGS
     const parsed: unknown = JSON.parse(raw)
-    return isValidSettings(parsed) ? parsed : DEFAULT_METRONOME_SETTINGS
+    if (!isValidSettings(parsed)) return DEFAULT_METRONOME_SETTINGS
+    // Normalize settings persisted before subdivision existed.
+    return { ...parsed, subdivision: isValidSubdivision(parsed.subdivision) ? parsed.subdivision : 'quarter' }
   } catch {
     return DEFAULT_METRONOME_SETTINGS
   }
@@ -112,11 +150,14 @@ export interface MetronomeLiveSettings {
   denominator: number
   pattern: BeatAccent[]
   gapTraining: GapTrainingSettings | null
+  subdivision: Subdivision
 }
 
 const GENERATOR_INTERVAL_MS = 25
 const GENERATE_HORIZON_SECONDS = 0.2
 const RECENT_BEAT_WINDOW_SECONDS = 2
+const SUBDIVISION_CLICK_FREQ = 1400
+const SUBDIVISION_CLICK_GAIN = 0.25
 
 /** The playing engine: schedules clicks via the lookahead scheduler and tracks beats for the visual indicator. */
 export function createMetronomeEngine() {
@@ -146,6 +187,7 @@ export function createMetronomeEngine() {
       const muted = accent === 'mute' || isGapMuted(measureIndex, settings.gapTraining)
       const time = nextBeatTime
       const index = beatIndex
+      const beatInterval = secondsPerClick(settings.tempoBpm, settings.denominator)
 
       schedulerHandle.schedule([
         {
@@ -159,7 +201,20 @@ export function createMetronomeEngine() {
         },
       ])
 
-      nextBeatTime += secondsPerClick(settings.tempoBpm, settings.denominator)
+      // Audio-only subdivision clicks inside the beat; they never record a beat or advance the visual indicator.
+      if (!muted) {
+        for (const offset of subdivisionOffsets(settings.subdivision)) {
+          const subTime = time + offset * beatInterval
+          schedulerHandle.schedule([
+            {
+              time: subTime,
+              callback: () => playClick(subTime, SUBDIVISION_CLICK_FREQ, 0.04, SUBDIVISION_CLICK_GAIN),
+            },
+          ])
+        }
+      }
+
+      nextBeatTime += beatInterval
       beatIndex += 1
     }
   }

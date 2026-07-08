@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { cycleAccent, defaultPattern, isGapMuted, secondsPerClick } from './metronome'
+import {
+  backbeatPattern,
+  cycleAccent,
+  defaultPattern,
+  downbeatOnlyPattern,
+  isGapMuted,
+  secondsPerClick,
+  subdivisionOffsets,
+} from './metronome'
 
 describe('defaultPattern', () => {
   it('accents beat 1 in simple meters', () => {
@@ -39,6 +47,44 @@ describe('secondsPerClick', () => {
 
   it('clicks faster for eighth-note meters at the same tempo', () => {
     expect(secondsPerClick(120, 8)).toBeCloseTo(0.25)
+  })
+})
+
+describe('subdivisionOffsets', () => {
+  it('returns no extra clicks for quarter', () => {
+    expect(subdivisionOffsets('quarter')).toEqual([])
+  })
+
+  it('adds a midpoint click for straight 8ths', () => {
+    expect(subdivisionOffsets('eighth')).toEqual([0.5])
+  })
+
+  it('adds 1/3 and 2/3 clicks for triplets', () => {
+    expect(subdivisionOffsets('triplet')).toEqual([1 / 3, 2 / 3])
+  })
+
+  it('adds a single 2/3 offbeat for swing', () => {
+    expect(subdivisionOffsets('swing')).toEqual([2 / 3])
+  })
+})
+
+describe('backbeatPattern', () => {
+  it('sounds only even beats in 4/4', () => {
+    expect(backbeatPattern(4)).toEqual(['mute', 'normal', 'mute', 'normal'])
+  })
+
+  it('sounds only beat 2 in 3/4', () => {
+    expect(backbeatPattern(3)).toEqual(['mute', 'normal', 'mute'])
+  })
+
+  it('falls back to the default when there is no even beat', () => {
+    expect(backbeatPattern(1)).toEqual(['accent'])
+  })
+})
+
+describe('downbeatOnlyPattern', () => {
+  it('accents beat 1 and mutes the rest', () => {
+    expect(downbeatOnlyPattern(4)).toEqual(['accent', 'mute', 'mute', 'mute'])
   })
 })
 

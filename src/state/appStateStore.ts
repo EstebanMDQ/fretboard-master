@@ -8,6 +8,7 @@ import {
   loadMetronomeSettings,
   type BeatAccent,
   type GapTrainingSettings,
+  type Subdivision,
 } from '../audio/metronome'
 import type { PlaybackDirection } from '../audio/notes'
 
@@ -32,6 +33,7 @@ export interface MetronomeToolState {
   denominator: 2 | 4 | 8 | 16
   pattern: BeatAccent[]
   gapTraining: GapTrainingSettings | null
+  subdivision: Subdivision
   collapsed: boolean
 }
 
@@ -61,7 +63,9 @@ export type AppAction =
   | { type: 'setTempoBpm'; tempoBpm: number }
   | { type: 'setMeter'; numerator: number; denominator: 2 | 4 | 8 | 16 }
   | { type: 'cycleBeatAccent'; index: number }
+  | { type: 'setBeatPattern'; pattern: BeatAccent[] }
   | { type: 'setGapTraining'; gapTraining: GapTrainingSettings | null }
+  | { type: 'setSubdivision'; subdivision: Subdivision }
   | { type: 'toggleMetronomeCollapsed' }
 
 function initScaleToolState(): ScaleToolState {
@@ -132,8 +136,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       )
       return { ...state, metronome: { ...state.metronome, pattern } }
     }
+    case 'setBeatPattern':
+      return { ...state, metronome: { ...state.metronome, pattern: action.pattern } }
     case 'setGapTraining':
       return { ...state, metronome: { ...state.metronome, gapTraining: action.gapTraining } }
+    case 'setSubdivision':
+      return { ...state, metronome: { ...state.metronome, subdivision: action.subdivision } }
     case 'toggleMetronomeCollapsed':
       return { ...state, metronome: { ...state.metronome, collapsed: !state.metronome.collapsed } }
     default:
@@ -155,6 +163,7 @@ export function initAppState(): AppState {
       denominator: storedMetronome.denominator,
       pattern: storedMetronome.pattern,
       gapTraining: storedMetronome.gapTraining,
+      subdivision: storedMetronome.subdivision,
       collapsed: true,
     },
   }

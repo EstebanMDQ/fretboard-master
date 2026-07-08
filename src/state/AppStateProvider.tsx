@@ -17,6 +17,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       denominator: state.metronome.denominator,
       pattern: state.metronome.pattern,
       gapTraining: state.metronome.gapTraining,
+      subdivision: state.metronome.subdivision,
     })
   }, [state.tempoBpm, state.metronome])
 

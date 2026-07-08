@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { unlockAudio } from '../../audio/engine'
-import { createMetronomeEngine, type MetronomeLiveSettings } from '../../audio/metronome'
+import {
+  backbeatPattern,
+  createMetronomeEngine,
+  defaultPattern,
+  downbeatOnlyPattern,
+  type MetronomeLiveSettings,
+  type Subdivision,
+} from '../../audio/metronome'
 import type { MetronomeToolState } from '../../state/appStateStore'
 import './MetronomePanel.css'
 
@@ -10,11 +17,20 @@ interface MetronomePanelProps {
   onTempoChange: (tempoBpm: number) => void
   onMeterChange: (numerator: number, denominator: 2 | 4 | 8 | 16) => void
   onCycleBeat: (index: number) => void
+  onSetBeatPattern: (pattern: MetronomeToolState['pattern']) => void
+  onSubdivisionChange: (subdivision: Subdivision) => void
   onGapTrainingChange: (gapTraining: MetronomeToolState['gapTraining']) => void
   onToggleCollapsed: () => void
 }
 
 const DENOMINATORS = [2, 4, 8, 16] as const
+
+const SUBDIVISIONS: { value: Subdivision; label: string }[] = [
+  { value: 'quarter', label: 'Quarter' },
+  { value: 'eighth', label: 'Straight 8ths' },
+  { value: 'triplet', label: 'Triplets' },
+  { value: 'swing', label: 'Swing 8ths' },
+]
 
 export function MetronomePanel({
   tempoBpm,
@@ -22,18 +38,22 @@ export function MetronomePanel({
   onTempoChange,
   onMeterChange,
   onCycleBeat,
+  onSetBeatPattern,
+  onSubdivisionChange,
   onGapTrainingChange,
   onToggleCollapsed,
 }: MetronomePanelProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentBeatIndex, setCurrentBeatIndex] = useState<number | null>(null)
   const engineRef = useRef<ReturnType<typeof createMetronomeEngine> | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const liveSettingsRef = useRef<MetronomeLiveSettings>({
     tempoBpm,
     denominator: metronome.denominator,
     pattern: metronome.pattern,
     gapTraining: metronome.gapTraining,
+    subdivision: metronome.subdivision,
   })
   useEffect(() => {
     liveSettingsRef.current = {
@@ -41,8 +61,9 @@ export function MetronomePanel({
       denominator: metronome.denominator,
       pattern: metronome.pattern,
       gapTraining: metronome.gapTraining,
+      subdivision: metronome.subdivision,
     }
-  }, [tempoBpm, metronome.denominator, metronome.pattern, metronome.gapTraining])
+  }, [tempoBpm, metronome.denominator, metronome.pattern, metronome.gapTraining, metronome.subdivision])
 
   useEffect(() => {
     if (!isPlaying) return
@@ -57,6 +78,23 @@ export function MetronomePanel({
   }, [isPlaying])
 
   useEffect(() => () => engineRef.current?.stop(), [])
+
+  // Dismiss the overlay on Escape or an outside click while it is open.
+  useEffect(() => {
+    if (metronome.collapsed) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onToggleCollapsed()
+    }
+    function onPointerDown(event: PointerEvent) {
+      if (panelRef.current && !panelRef.current.contains(event.target as Node)) onToggleCollapsed()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [metronome.collapsed, onToggleCollapsed])
 
   async function handleTogglePlay() {
     if (isPlaying) {
@@ -74,7 +112,7 @@ export function MetronomePanel({
   }
 
   return (
-    <div className="metronome-panel">
+    <div className="metronome-panel" ref={panelRef}>
       <button type="button" className="metronome-panel__toggle" onClick={onToggleCollapsed}>
         Metronome {metronome.collapsed ? '▸' : '▾'}
       </button>
@@ -118,6 +156,20 @@ export function MetronomePanel({
             </label>
           </div>
 
+          <label className="metronome-panel__field">
+            Feel
+            <select
+              value={metronome.subdivision}
+              onChange={(e) => onSubdivisionChange(e.target.value as Subdivision)}
+            >
+              {SUBDIVISIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <div className="metronome-panel__beats">
             {metronome.pattern.map((accent, index) => (
               <button
@@ -137,6 +189,19 @@ export function MetronomePanel({
                 {index + 1}
               </button>
             ))}
+          </div>
+          <p className="metronome-panel__hint">Tap a beat: accent &rarr; normal &rarr; mute</p>
+
+          <div className="metronome-panel__pattern-presets">
+            <button type="button" onClick={() => onSetBeatPattern(defaultPattern(metronome.numerator, metronome.denominator))}>
+              All beats
+            </button>
+            <button type="button" onClick={() => onSetBeatPattern(backbeatPattern(metronome.numerator))}>
+              Backbeat
+            </button>
+            <button type="button" onClick={() => onSetBeatPattern(downbeatOnlyPattern(metronome.numerator))}>
+              Downbeat only
+            </button>
           </div>
 
           <div className="metronome-panel__gap">

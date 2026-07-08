@@ -95,6 +95,8 @@ export function AppShell() {
           onTempoChange={(value) => dispatch({ type: 'setTempoBpm', tempoBpm: value })}
           onMeterChange={(numerator, denominator) => dispatch({ type: 'setMeter', numerator, denominator })}
           onCycleBeat={(index) => dispatch({ type: 'cycleBeatAccent', index })}
+          onSetBeatPattern={(pattern) => dispatch({ type: 'setBeatPattern', pattern })}
+          onSubdivisionChange={(subdivision) => dispatch({ type: 'setSubdivision', subdivision })}
           onGapTrainingChange={(gapTraining) => dispatch({ type: 'setGapTraining', gapTraining })}
           onToggleCollapsed={() => dispatch({ type: 'toggleMetronomeCollapsed' })}
         />
