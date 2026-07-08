@@ -15,7 +15,7 @@ The application SHALL build to static assets (HTML, JS, CSS) and load in a moder
 - **THEN** the application renders without console errors
 
 ### Requirement: Base layout with tool area and control panel
-The app shell SHALL render a header with the application name, a shared global controls region including a collapsible `MetronomePanel`, a Scales | Arpeggios | Chords tool navigation, a control panel region for the active tool, and a main visualization region where the active tool is mounted.
+The app shell SHALL render a header with the application name, a shared global controls region including a collapsible `MetronomePanel`, a Scales | Arpeggios | Chords | Voicings tool navigation, a control panel region for the active tool, and a main visualization region where the active tool is mounted.
 
 #### Scenario: Shell renders with metronome control
 - **WHEN** the app loads
@@ -28,6 +28,10 @@ The app shell SHALL render a header with the application name, a shared global c
 #### Scenario: Chords tab is available
 - **WHEN** the app loads
 - **THEN** the tool navigation offers Scales, Arpeggios, and Chords tabs, and selecting Chords mounts the Chords control panel
+
+#### Scenario: Voicings tab is available
+- **WHEN** the app loads
+- **THEN** the tool navigation offers a Voicings tab, and selecting Voicings mounts the Voicings control panel
 
 ### Requirement: Quality tooling is runnable
 The project SHALL provide working `dev`, `build`, `test`, and `lint` npm scripts.

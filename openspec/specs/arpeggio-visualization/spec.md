@@ -25,7 +25,7 @@ The system SHALL support at least the following chord qualities: maj, min, dim, 
 - **THEN** the extended tone is labeled "9", "11", or "13" respectively, not folded down to "2", "4", or "6"
 
 ### Requirement: Multi-tab tool navigation with independent state
-The app shell SHALL provide Scales, Arpeggios, and Chords tabs; each tool's selections SHALL persist independently across tab switches.
+The app shell SHALL provide Scales, Arpeggios, Chords, and Voicings tabs; each tool's selections SHALL persist independently across tab switches.
 
 #### Scenario: Switch tabs and back
 - **WHEN** the user configures a scale, switches to Arpeggios, configures a chord, and switches back to Scales
@@ -34,4 +34,8 @@ The app shell SHALL provide Scales, Arpeggios, and Chords tabs; each tool's sele
 #### Scenario: Chords tab state persists
 - **WHEN** the user configures a chord and position in the Chords tab, switches to another tool, and returns
 - **THEN** the Chords tab still shows the configured chord and selected position
+
+#### Scenario: Voicings tab state persists
+- **WHEN** the user configures a chord, filters, and selected voicing in the Voicings tab, switches to another tool, and returns
+- **THEN** the Voicings tab still shows the configured chord, filters, and selected voicing
 
