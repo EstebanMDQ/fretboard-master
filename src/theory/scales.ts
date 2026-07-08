@@ -74,4 +74,14 @@ export const SCALE_PRESETS: Scale[] = [
     intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     degreeLabels: ['1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7'],
   },
+  {
+    name: 'Diminished (Whole-Half)',
+    intervals: [0, 2, 3, 5, 6, 8, 9, 11],
+    degreeLabels: ['1', '2', 'b3', '4', 'b5', 'b6', '6', '7'],
+  },
+  {
+    name: 'Diminished (Half-Whole)',
+    intervals: [0, 1, 3, 4, 6, 7, 9, 10],
+    degreeLabels: ['1', 'b2', '#2', '3', '#4', '5', '6', 'b7'],
+  },
 ]
