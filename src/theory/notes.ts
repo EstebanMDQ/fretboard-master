@@ -52,9 +52,23 @@ export function spellingToLabel(spelling: Spelling): string {
 
 /** The 17 standard root spellings: naturals, plus 5 sharps and 5 flats. No enharmonic duplicates (e.g. no Cb, Fb, E#, B#). */
 export const STANDARD_SPELLINGS: Spelling[] = [
-  ...LETTER_ORDER.map((letter): Spelling => ({ letter, accidental: 0 })),
-  ...(['C', 'D', 'F', 'G', 'A'] as const).map((letter): Spelling => ({ letter, accidental: 1 })),
-  ...(['D', 'E', 'G', 'A', 'B'] as const).map((letter): Spelling => ({ letter, accidental: -1 })),
+  {letter: 'C', accidental: 0},
+  {letter: 'C', accidental: 1},
+  {letter: 'D', accidental: -1},
+  {letter: 'D', accidental: 0},
+  {letter: 'D', accidental: 1},
+  {letter: 'E', accidental: -1},
+  {letter: 'E', accidental: 0},
+  {letter: 'F', accidental: 0},
+  {letter: 'F', accidental: 1},
+  {letter: 'G', accidental: -1},
+  {letter: 'G', accidental: 0},
+  {letter: 'G', accidental: 1},
+  {letter: 'A', accidental: -1},
+  {letter: 'A', accidental: 0},
+  {letter: 'A', accidental: 1},
+  {letter: 'B', accidental: -1},
+  {letter: 'B', accidental: 0}
 ]
 
 const DEGREE_LABEL_PATTERN = /^(b{1,2}|#{1,2})?(\d{1,2})$/
