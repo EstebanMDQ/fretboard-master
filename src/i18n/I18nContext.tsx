@@ -1,9 +1,7 @@
-import { createContext, useState, type ReactNode } from 'react'
-import type { Translations } from './types'
+import { useState, type ReactNode } from 'react'
 import { en } from './en'
 import { es } from './es'
-
-export type Locale = 'en' | 'es'
+import { I18nContext, SetLocaleContext, type Locale } from './contexts'
 
 function detectLocale(): Locale {
   const stored = localStorage.getItem('locale')
@@ -15,13 +13,6 @@ function detectLocale(): Locale {
   return 'en'
 }
 
-function localeToTranslations(locale: Locale): Translations {
-  return locale === 'es' ? es : en
-}
-
-export const I18nContext = createContext<Translations>(en)
-export const SetLocaleContext = createContext<(locale: Locale) => void>(() => {})
-
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectLocale)
 
@@ -32,7 +23,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   return (
     <SetLocaleContext.Provider value={setLocale}>
-      <I18nContext.Provider value={localeToTranslations(locale)}>
+      <I18nContext.Provider value={locale === 'es' ? es : en}>
         {children}
       </I18nContext.Provider>
     </SetLocaleContext.Provider>
