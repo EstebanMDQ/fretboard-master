@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation, useSetLocale } from '../../i18n/useTranslation'
 import { Fretboard } from '../Fretboard/Fretboard'
 import { InstrumentPanel } from '../InstrumentPanel/InstrumentPanel'
 import { ScalePanel } from '../ScalePanel/ScalePanel'
@@ -6,7 +7,7 @@ import { ArpeggioPanel } from '../ArpeggioPanel/ArpeggioPanel'
 import { ChordsPanel } from '../ChordsPanel/ChordsPanel'
 import { VoicingsPanel } from '../VoicingsPanel/VoicingsPanel'
 import { MetronomePanel } from '../MetronomePanel/MetronomePanel'
-import { buildMarkers, SCALE_PRESETS } from '../../theory/scales'
+import { buildMarkers, SCALE_FAMILIES } from '../../theory/scales'
 import { fallbackDegreeLabel } from '../../theory/degrees'
 import { resolveArpeggioChord } from '../../theory/chordParser'
 import { buildCagedPositions } from '../../theory/cagedShapes'
@@ -21,13 +22,12 @@ export function AppShell() {
     useAppState()
   const dispatch = useAppDispatch()
   const notePlayback = useSequencePlayback()
+  const t = useTranslation()
+  const setLocale = useSetLocale()
 
-  const scaleIntervals = scaleTool.isCustom
-    ? scaleTool.customIntervals
-    : SCALE_PRESETS[scaleTool.presetIndex].intervals
-  const scaleDegreeLabels = scaleTool.isCustom
-    ? scaleTool.customIntervals.map(fallbackDegreeLabel)
-    : SCALE_PRESETS[scaleTool.presetIndex].degreeLabels
+  const activeScaleMode = SCALE_FAMILIES[scaleTool.familyIndex].modes[scaleTool.modeIndex]
+  const scaleIntervals = scaleTool.isCustom ? scaleTool.customIntervals : activeScaleMode.intervals
+  const scaleDegreeLabels = scaleTool.isCustom ? scaleTool.customIntervals.map(fallbackDegreeLabel) : activeScaleMode.degreeLabels
 
   const chord = resolveArpeggioChord(arpeggioTool.symbolInput, arpeggioTool.noteByNote)
 
@@ -59,7 +59,8 @@ export function AppShell() {
     activeTool,
     scaleTool.root,
     scaleTool.isCustom,
-    scaleTool.presetIndex,
+    scaleTool.familyIndex,
+    scaleTool.modeIndex,
     scaleTool.customIntervals,
     arpeggioTool.symbolInput,
     arpeggioTool.noteByNote,
@@ -90,6 +91,20 @@ export function AppShell() {
     <div className="app-shell">
       <header className="app-shell__header">
         <h1>fretboard-master</h1>
+        <div className="app-shell__header-right">
+          <div className="app-shell__lang-toggle">
+            <button type="button" onClick={() => setLocale('en')}>{t.langEn}</button>
+            <button type="button" onClick={() => setLocale('es')}>{t.langEs}</button>
+          </div>
+          <a
+            className="app-shell__repo-link"
+            href="https://github.com/EstebanMDQ/fretboard-master"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+        </div>
       </header>
 
       <div className="app-shell__global-controls" aria-label="Global controls">
@@ -99,39 +114,39 @@ export function AppShell() {
             className={activeTool === 'scale' ? 'app-shell__tab app-shell__tab--active' : 'app-shell__tab'}
             onClick={() => dispatch({ type: 'setActiveTool', tool: 'scale' })}
           >
-            Scales
+            {t.tabScales}
           </button>
           <button
             type="button"
             className={activeTool === 'arpeggio' ? 'app-shell__tab app-shell__tab--active' : 'app-shell__tab'}
             onClick={() => dispatch({ type: 'setActiveTool', tool: 'arpeggio' })}
           >
-            Arpeggios
+            {t.tabArpeggios}
           </button>
           <button
             type="button"
             className={activeTool === 'chords' ? 'app-shell__tab app-shell__tab--active' : 'app-shell__tab'}
             onClick={() => dispatch({ type: 'setActiveTool', tool: 'chords' })}
           >
-            Chords
+            {t.tabChords}
           </button>
           <button
             type="button"
             className={activeTool === 'voicings' ? 'app-shell__tab app-shell__tab--active' : 'app-shell__tab'}
             onClick={() => dispatch({ type: 'setActiveTool', tool: 'voicings' })}
           >
-            Voicings
+            {t.tabVoicings}
           </button>
         </nav>
 
         <label className="app-shell__display-toggle">
-          Labels
+          {t.labelsLabel}
           <select
             value={displayMode}
             onChange={(e) => dispatch({ type: 'setDisplayMode', displayMode: e.target.value as 'names' | 'degrees' })}
           >
-            <option value="names">Note names</option>
-            <option value="degrees">Scale degrees</option>
+            <option value="names">{t.labelNoteNames}</option>
+            <option value="degrees">{t.labelScaleDegrees}</option>
           </select>
         </label>
 
@@ -153,7 +168,8 @@ export function AppShell() {
           <ScalePanel
             scaleTool={scaleTool}
             onRootChange={(root) => dispatch({ type: 'setScaleRoot', root })}
-            onPresetChange={(presetIndex) => dispatch({ type: 'selectScalePreset', presetIndex })}
+            onFamilyChange={(familyIndex) => dispatch({ type: 'selectScaleFamily', familyIndex })}
+            onModeChange={(modeIndex) => dispatch({ type: 'selectScaleMode', modeIndex })}
             onCustomMode={() => dispatch({ type: 'setCustomScaleMode' })}
             onToggleCustomInterval={(interval) => dispatch({ type: 'toggleCustomScaleInterval', interval })}
             onDirectionChange={(direction) => dispatch({ type: 'setScalePlaybackDirection', direction })}

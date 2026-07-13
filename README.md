@@ -3,6 +3,8 @@
 A client-side webapp for studying fretted instruments by visualizing notes on a
 fretboard: scales, arpeggios, and custom tunings.
 
+Live app: https://estebanmdq.github.io/fretboard-master/
+
 ## Development
 
 ```bash

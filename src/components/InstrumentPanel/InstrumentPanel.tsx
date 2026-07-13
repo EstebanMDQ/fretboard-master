@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '../../i18n/useTranslation'
 import { STANDARD_SPELLINGS, spellingToLabel, type Spelling } from '../../theory/notes'
 import {
   BUILT_IN_TUNINGS,
@@ -30,6 +31,7 @@ function findSpelling(key: string): Spelling {
 const DEFAULT_NEW_STRING: StringConfig = { spelling: { letter: 'E', accidental: 0 }, octave: 3 }
 
 export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
+  const t = useTranslation()
   const [savedTunings, setSavedTunings] = useState<NamedTuning[]>(() => loadSavedTunings())
   const [newName, setNewName] = useState('')
 
@@ -61,7 +63,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
 
   return (
     <div className="instrument-panel">
-      <h2>Instrument</h2>
+      <h2>{t.instrumentPanelTitle}</h2>
 
       <div className="instrument-panel__presets">
         {BUILT_IN_TUNINGS.map((tuning) => (
@@ -75,7 +77,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
         <div className="instrument-panel__save-row">
           <input
             type="text"
-            placeholder="Name this tuning"
+            placeholder={t.tuningNamePlaceholder}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
@@ -83,7 +85,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
             }}
           />
           <button type="button" onClick={saveCurrent} disabled={newName.trim() === ''}>
-            Save
+            {t.saveBtn}
           </button>
         </div>
         {savedTunings.length > 0 && (
@@ -100,7 +102,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
                 <button
                   type="button"
                   onClick={() => persist(deleteTuning(savedTunings, tuning.name))}
-                  aria-label={`Delete tuning ${tuning.name}`}
+                  aria-label={t.deleteTuningLabel(tuning.name)}
                 >
                   &times;
                 </button>
@@ -111,7 +113,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
       </div>
 
       <label className="instrument-panel__field">
-        Frets
+        {t.fretsLabel}
         <input
           type="number"
           min={1}
@@ -122,7 +124,7 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
       </label>
 
       <fieldset className="instrument-panel__strings">
-        <legend>Strings (1 = top)</legend>
+        <legend>{t.stringsLegend}</legend>
         {config.strings.map((stringConfig, index) => (
           <div key={index} className="instrument-panel__string-row">
             <span>{index + 1}</span>
@@ -147,14 +149,14 @@ export function InstrumentPanel({ config, onChange }: InstrumentPanelProps) {
               type="button"
               onClick={() => removeString(index)}
               disabled={config.strings.length <= 1}
-              aria-label={`Remove string ${index + 1}`}
+              aria-label={t.removeStringLabel(index + 1)}
             >
               &times;
             </button>
           </div>
         ))}
         <button type="button" onClick={addString}>
-          Add string
+          {t.addStringBtn}
         </button>
       </fieldset>
     </div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '../../i18n/useTranslation'
 import { unlockAudio } from '../../audio/engine'
 import {
   backbeatPattern,
@@ -25,12 +26,7 @@ interface MetronomePanelProps {
 
 const DENOMINATORS = [2, 4, 8, 16] as const
 
-const SUBDIVISIONS: { value: Subdivision; label: string }[] = [
-  { value: 'quarter', label: 'Quarter' },
-  { value: 'eighth', label: 'Straight 8ths' },
-  { value: 'triplet', label: 'Triplets' },
-  { value: 'swing', label: 'Swing 8ths' },
-]
+const SUBDIVISION_VALUES: Subdivision[] = ['quarter', 'eighth', 'triplet', 'swing']
 
 export function MetronomePanel({
   tempoBpm,
@@ -43,10 +39,18 @@ export function MetronomePanel({
   onGapTrainingChange,
   onToggleCollapsed,
 }: MetronomePanelProps) {
+  const t = useTranslation()
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentBeatIndex, setCurrentBeatIndex] = useState<number | null>(null)
   const engineRef = useRef<ReturnType<typeof createMetronomeEngine> | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  const subdivisionLabels: Record<Subdivision, string> = {
+    quarter: t.subdivisionQuarter,
+    eighth: t.subdivisionEighth,
+    triplet: t.subdivisionTriplet,
+    swing: t.subdivisionSwing,
+  }
 
   const liveSettingsRef = useRef<MetronomeLiveSettings>({
     tempoBpm,
@@ -114,13 +118,13 @@ export function MetronomePanel({
   return (
     <div className="metronome-panel" ref={panelRef}>
       <button type="button" className="metronome-panel__toggle" onClick={onToggleCollapsed}>
-        Metronome {metronome.collapsed ? '▸' : '▾'}
+        {t.metronomeToggle} {metronome.collapsed ? '▸' : '▾'}
       </button>
 
       {!metronome.collapsed && (
         <div className="metronome-panel__body">
           <label className="metronome-panel__field">
-            Tempo
+            {t.tempoLabel}
             <input
               type="number"
               min={30}
@@ -132,7 +136,7 @@ export function MetronomePanel({
 
           <div className="metronome-panel__meter">
             <label className="metronome-panel__field">
-              Beats
+              {t.beatsLabel}
               <input
                 type="number"
                 min={1}
@@ -142,7 +146,7 @@ export function MetronomePanel({
               />
             </label>
             <label className="metronome-panel__field">
-              Note value
+              {t.noteValueLabel}
               <select
                 value={metronome.denominator}
                 onChange={(e) => onMeterChange(metronome.numerator, Number(e.target.value) as 2 | 4 | 8 | 16)}
@@ -157,14 +161,14 @@ export function MetronomePanel({
           </div>
 
           <label className="metronome-panel__field">
-            Feel
+            {t.feelLabel}
             <select
               value={metronome.subdivision}
               onChange={(e) => onSubdivisionChange(e.target.value as Subdivision)}
             >
-              {SUBDIVISIONS.map(({ value, label }) => (
+              {SUBDIVISION_VALUES.map((value) => (
                 <option key={value} value={value}>
-                  {label}
+                  {subdivisionLabels[value]}
                 </option>
               ))}
             </select>
@@ -190,17 +194,17 @@ export function MetronomePanel({
               </button>
             ))}
           </div>
-          <p className="metronome-panel__hint">Tap a beat: accent &rarr; normal &rarr; mute</p>
+          <p className="metronome-panel__hint">{t.metronomeBeatHint}</p>
 
           <div className="metronome-panel__pattern-presets">
             <button type="button" onClick={() => onSetBeatPattern(defaultPattern(metronome.numerator, metronome.denominator))}>
-              All beats
+              {t.beatPatternAllBeats}
             </button>
             <button type="button" onClick={() => onSetBeatPattern(backbeatPattern(metronome.numerator))}>
-              Backbeat
+              {t.beatPatternBackbeat}
             </button>
             <button type="button" onClick={() => onSetBeatPattern(downbeatOnlyPattern(metronome.numerator))}>
-              Downbeat only
+              {t.beatPatternDownbeat}
             </button>
           </div>
 
@@ -213,12 +217,12 @@ export function MetronomePanel({
                   onGapTrainingChange(e.target.checked ? { soundingMeasures: 2, silentMeasures: 2 } : null)
                 }
               />
-              Gap training
+              {t.gapTrainingLabel}
             </label>
             {metronome.gapTraining && (
               <>
                 <label className="metronome-panel__field">
-                  Play
+                  {t.gapPlayLabel}
                   <input
                     type="number"
                     min={1}
@@ -232,7 +236,7 @@ export function MetronomePanel({
                   />
                 </label>
                 <label className="metronome-panel__field">
-                  Mute
+                  {t.gapMuteLabel}
                   <input
                     type="number"
                     min={1}
@@ -250,7 +254,7 @@ export function MetronomePanel({
           </div>
 
           <button type="button" className="metronome-panel__play" onClick={handleTogglePlay}>
-            {isPlaying ? 'Stop' : 'Play'}
+            {isPlaying ? t.metronomeStopBtn : t.metronomePlayBtn}
           </button>
         </div>
       )}

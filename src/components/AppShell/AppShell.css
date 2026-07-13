@@ -13,12 +13,50 @@
   grid-area: header;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .app-shell__header h1 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
+}
+
+.app-shell__header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-shell__lang-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.app-shell__lang-toggle button {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 7px;
+}
+
+.app-shell__lang-toggle button:hover {
+  color: var(--text);
+}
+
+.app-shell__repo-link {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.app-shell__repo-link:hover {
+  color: var(--text);
 }
 
 .app-shell__global-controls {

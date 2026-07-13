@@ -1,8 +1,5 @@
-# scale-visualization Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change add-scale-visualization. Update Purpose after archive.
-## Requirements
 ### Requirement: Select a root and scale
 The system SHALL let the user pick a root (one of the 17 standard spellings), a scale family, and a mode within that family via `ScalePanel`.
 
@@ -34,18 +31,4 @@ The system SHALL define every scale mode as `{ name, intervals, degreeLabels }`,
 - **THEN** the scale highlights intervals 0, 2, 3, 5, 6, 8, 9, 11 labeled by scale degree
 - **WHEN** the user selects Diminished / Half-Whole
 - **THEN** the scale highlights intervals 0, 1, 3, 4, 6, 7, 9, 10 labeled by scale degree
-
-### Requirement: Custom scale editor
-The system SHALL let the user build a custom scale via a 12-toggle chromatic row, with the root always locked on.
-
-#### Scenario: Toggle custom scale tones
-- **WHEN** the user toggles chromatic degrees on or off in the custom scale editor
-- **THEN** the fretboard highlighting updates to match the toggled pitch classes, and the root remains selected
-
-### Requirement: Shared marker builder
-The system SHALL provide `buildMarkers(config, root, intervals, displayMode)` as the single function used to turn a root and interval set into fretboard markers.
-
-#### Scenario: Reused by future tools
-- **WHEN** another study tool needs to highlight a root + interval set on the fretboard
-- **THEN** it calls `buildMarkers` rather than duplicating marker-building logic
 

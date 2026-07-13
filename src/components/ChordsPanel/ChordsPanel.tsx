@@ -1,4 +1,5 @@
 import type { CagedResult } from '../../theory/cagedShapes'
+import { useTranslation } from '../../i18n/useTranslation'
 import './ChordsPanel.css'
 
 interface ChordsPanelProps {
@@ -16,19 +17,20 @@ export function ChordsPanel({
   onSymbolChange,
   onPositionChange,
 }: ChordsPanelProps) {
+  const t = useTranslation()
   const positions = result.positions
   const hasPositions = result.supported && positions.length > 0
   const current = hasPositions ? positions[Math.min(positionIndex, positions.length - 1)] : null
 
   return (
     <div className="chords-panel">
-      <h2>Chords (CAGED)</h2>
+      <h2>{t.chordsPanelTitle}</h2>
 
       <label className="chords-panel__field">
-        Chord symbol
+        {t.chordSymbolLabel}
         <input
           type="text"
-          placeholder="e.g. Am, G7, Cmaj9"
+          placeholder={t.chordSymbolPlaceholderChords}
           value={symbolInput}
           onChange={(e) => onSymbolChange(e.target.value)}
         />
@@ -37,11 +39,11 @@ export function ChordsPanel({
       {!result.supported && <p className="chords-panel__message">{result.reason}</p>}
 
       {result.supported && symbolInput.trim() === '' && (
-        <p className="chords-panel__hint">Enter a chord to see its CAGED positions up the neck.</p>
+        <p className="chords-panel__hint">{t.chordsHint}</p>
       )}
 
       {result.supported && symbolInput.trim() !== '' && positions.length === 0 && (
-        <p className="chords-panel__message">No CAGED shapes fit on this neck.</p>
+        <p className="chords-panel__message">{t.chordsNoShapes}</p>
       )}
 
       {hasPositions && current && (
@@ -80,7 +82,7 @@ export function ChordsPanel({
           </label>
 
           <p className="chords-panel__count">
-            Position {Math.min(positionIndex, positions.length - 1) + 1} of {positions.length}
+            {t.chordsPositionOf(Math.min(positionIndex, positions.length - 1) + 1, positions.length)}
           </p>
         </div>
       )}

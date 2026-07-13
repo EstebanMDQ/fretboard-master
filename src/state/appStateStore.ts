@@ -19,7 +19,8 @@ export type VoicingFilter = 'open-strings' | 'spread' | 'close' | 'rootless' | '
 export interface ScaleToolState {
   root: Spelling
   isCustom: boolean
-  presetIndex: number
+  familyIndex: number
+  modeIndex: number
   customIntervals: number[]
   playbackDirection: PlaybackDirection
 }
@@ -67,7 +68,8 @@ export type AppAction =
   | { type: 'setDisplayMode'; displayMode: DisplayMode }
   | { type: 'setActiveTool'; tool: ActiveTool }
   | { type: 'setScaleRoot'; root: Spelling }
-  | { type: 'selectScalePreset'; presetIndex: number }
+  | { type: 'selectScaleFamily'; familyIndex: number }
+  | { type: 'selectScaleMode'; modeIndex: number }
   | { type: 'setCustomScaleMode' }
   | { type: 'toggleCustomScaleInterval'; interval: number }
   | { type: 'setScalePlaybackDirection'; direction: PlaybackDirection }
@@ -92,7 +94,8 @@ function initScaleToolState(): ScaleToolState {
   return {
     root: { letter: 'C', accidental: 0 },
     isCustom: false,
-    presetIndex: 0,
+    familyIndex: 0,
+    modeIndex: 0,
     customIntervals: [0],
     playbackDirection: 'ascending',
   }
@@ -120,8 +123,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, activeTool: action.tool }
     case 'setScaleRoot':
       return { ...state, scaleTool: { ...state.scaleTool, root: action.root } }
-    case 'selectScalePreset':
-      return { ...state, scaleTool: { ...state.scaleTool, isCustom: false, presetIndex: action.presetIndex } }
+    case 'selectScaleFamily':
+      return { ...state, scaleTool: { ...state.scaleTool, isCustom: false, familyIndex: action.familyIndex, modeIndex: 0 } }
+    case 'selectScaleMode':
+      return { ...state, scaleTool: { ...state.scaleTool, isCustom: false, modeIndex: action.modeIndex } }
     case 'setCustomScaleMode':
       return { ...state, scaleTool: { ...state.scaleTool, isCustom: true } }
     case 'toggleCustomScaleInterval': {

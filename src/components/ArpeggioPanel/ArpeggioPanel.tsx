@@ -2,6 +2,7 @@ import { STANDARD_SPELLINGS, spellingToLabel, type Spelling } from '../../theory
 import { parseChordSymbol } from '../../theory/chordParser'
 import type { PlaybackDirection } from '../../audio/notes'
 import type { ArpeggioToolState } from '../../state/appStateStore'
+import { useTranslation } from '../../i18n/useTranslation'
 import './ArpeggioPanel.css'
 
 interface ArpeggioPanelProps {
@@ -29,18 +30,19 @@ export function ArpeggioPanel({
   canPlay,
   onPlay,
 }: ArpeggioPanelProps) {
+  const t = useTranslation()
   const parsed = arpeggioTool.symbolInput.trim() ? parseChordSymbol(arpeggioTool.symbolInput) : null
   const showNoteByNote = arpeggioTool.symbolInput.trim() === '' || parsed?.ok === false
 
   return (
     <div className="arpeggio-panel">
-      <h2>Arpeggio</h2>
+      <h2>{t.arpeggioPanelTitle}</h2>
 
       <label className="arpeggio-panel__field">
-        Chord symbol
+        {t.chordSymbolLabel}
         <input
           type="text"
-          placeholder="e.g. Cmaj7"
+          placeholder={t.chordSymbolPlaceholderArpeggio}
           value={arpeggioTool.symbolInput}
           onChange={(e) => onSymbolChange(e.target.value)}
         />
@@ -50,7 +52,7 @@ export function ArpeggioPanel({
 
       {showNoteByNote && (
         <div className="arpeggio-panel__note-by-note">
-          <p className="arpeggio-panel__hint">Or build the chord one note at a time (first pick is the root):</p>
+          <p className="arpeggio-panel__hint">{t.arpeggioHint}</p>
           <div className="arpeggio-panel__picks">
             {arpeggioTool.noteByNote.map((spelling, index) => (
               <span key={index} className="arpeggio-panel__pick">
@@ -67,7 +69,7 @@ export function ArpeggioPanel({
               }}
             >
               <option value="" disabled>
-                Add note...
+                {t.addNotePlaceholder}
               </option>
               {STANDARD_SPELLINGS.map((spelling) => (
                 <option key={spellingKey(spelling)} value={spellingKey(spelling)}>
@@ -76,7 +78,7 @@ export function ArpeggioPanel({
               ))}
             </select>
             <button type="button" onClick={onClearNotes} disabled={arpeggioTool.noteByNote.length === 0}>
-              Clear
+              {t.clearBtn}
             </button>
           </div>
         </div>
@@ -84,18 +86,18 @@ export function ArpeggioPanel({
 
       <div className="arpeggio-panel__playback">
         <label className="arpeggio-panel__playback-field">
-          Direction
+          {t.scaleDirection}
           <select
             value={arpeggioTool.playbackDirection}
             onChange={(e) => onDirectionChange(e.target.value as PlaybackDirection)}
           >
-            <option value="ascending">Ascending</option>
-            <option value="descending">Descending</option>
-            <option value="both">Both</option>
+            <option value="ascending">{t.directionAscending}</option>
+            <option value="descending">{t.directionDescending}</option>
+            <option value="both">{t.directionBoth}</option>
           </select>
         </label>
         <button type="button" className="arpeggio-panel__play" onClick={onPlay} disabled={!canPlay}>
-          {isPlaying ? 'Restart' : 'Play'}
+          {isPlaying ? t.restartBtn : t.playBtn}
         </button>
       </div>
     </div>

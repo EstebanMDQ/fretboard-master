@@ -1,16 +1,8 @@
 import type { FindVoicingsResult, Voicing, VoicingTag } from '../../theory/voicings'
 import type { VoicingFilter } from '../../state/appStateStore'
+import { useTranslation } from '../../i18n/useTranslation'
+import type { Translations } from '../../i18n/types'
 import './VoicingsPanel.css'
-
-const FILTER_LABELS: Record<VoicingFilter, string> = {
-  'open-strings': 'Open strings',
-  spread: 'Spread',
-  close: 'Close',
-  rootless: 'Rootless',
-  'no-fifth': 'No 5th',
-  'string-skip': 'String skip',
-  stretch: 'Stretch',
-}
 
 const FILTER_ORDER: VoicingFilter[] = [
   'open-strings',
@@ -33,6 +25,32 @@ interface VoicingsPanelProps {
   onSelect: (index: number) => void
 }
 
+function filterLabel(filter: VoicingFilter, t: Translations): string {
+  const map: Record<VoicingFilter, string> = {
+    'open-strings': t.filterOpenStrings,
+    spread: t.filterSpread,
+    close: t.filterClose,
+    rootless: t.filterRootless,
+    'no-fifth': t.filterNoFifth,
+    'string-skip': t.filterStringSkip,
+    stretch: t.filterStretch,
+  }
+  return map[filter]
+}
+
+function tagLabel(tag: VoicingTag, t: Translations): string {
+  const map: Record<VoicingTag, string> = {
+    'open-strings': t.tagOpen,
+    spread: t.tagSpread,
+    close: t.tagClose,
+    rootless: t.tagRootless,
+    'no-fifth': t.tagNoFifth,
+    'string-skip': t.tagSkip,
+    stretch: t.tagStretch,
+  }
+  return map[tag]
+}
+
 /** Bass-to-top stack of degree labels, e.g. "1 5 b7 3". */
 function degreeStack(voicing: Voicing): string {
   return [...voicing.notes]
@@ -49,16 +67,6 @@ function positionLabel(voicing: Voicing): string {
   return frets.length === 1 ? `fret ${frets[0]}` : `frets ${frets.join(', ')}`
 }
 
-const TAG_LABEL: Record<VoicingTag, string> = {
-  'open-strings': 'open',
-  spread: 'spread',
-  close: 'close',
-  rootless: 'rootless',
-  'no-fifth': 'no 5th',
-  'string-skip': 'skip',
-  stretch: 'stretch',
-}
-
 export function VoicingsPanel({
   symbolInput,
   result,
@@ -69,18 +77,19 @@ export function VoicingsPanel({
   onToggleFilter,
   onSelect,
 }: VoicingsPanelProps) {
+  const t = useTranslation()
   const hasInput = symbolInput.trim() !== ''
   const clampedIndex = Math.min(selectedIndex, Math.max(0, visibleVoicings.length - 1))
 
   return (
     <div className="voicings-panel">
-      <h2>Voicings</h2>
+      <h2>{t.voicingsPanelTitle}</h2>
 
       <label className="voicings-panel__field">
-        Chord symbol
+        {t.chordSymbolLabel}
         <input
           type="text"
-          placeholder="e.g. B13, Cm7b5"
+          placeholder={t.chordSymbolPlaceholderVoicings}
           value={symbolInput}
           onChange={(e) => onSymbolChange(e.target.value)}
         />
@@ -89,7 +98,7 @@ export function VoicingsPanel({
       {!result.supported && <p className="voicings-panel__message">{result.reason}</p>}
 
       {result.supported && !hasInput && (
-        <p className="voicings-panel__hint">Enter a chord to discover playable voicings on the current tuning.</p>
+        <p className="voicings-panel__hint">{t.voicingsHint}</p>
       )}
 
       {result.supported && hasInput && (
@@ -106,20 +115,18 @@ export function VoicingsPanel({
                 }
                 onClick={() => onToggleFilter(filter)}
               >
-                {FILTER_LABELS[filter]}
+                {filterLabel(filter, t)}
               </button>
             ))}
           </div>
 
           {visibleVoicings.length === 0 ? (
             <p className="voicings-panel__message">
-              {result.voicings.length === 0
-                ? 'No playable voicing found for this chord on this tuning.'
-                : 'No voicings match the active filters.'}
+              {result.voicings.length === 0 ? t.voicingsNoVoicing : t.voicingsNoMatch}
             </p>
           ) : (
             <>
-              <p className="voicings-panel__count">{visibleVoicings.length} shapes</p>
+              <p className="voicings-panel__count">{t.voicingsShapeCount(visibleVoicings.length)}</p>
               <ul className="voicings-panel__list">
                 {visibleVoicings.map((voicing, index) => (
                   <li key={index}>
@@ -137,7 +144,7 @@ export function VoicingsPanel({
                         {positionLabel(voicing)}
                         {voicing.tags.map((tag) => (
                           <span key={tag} className="voicings-panel__tag">
-                            {TAG_LABEL[tag]}
+                            {tagLabel(tag, t)}
                           </span>
                         ))}
                       </span>

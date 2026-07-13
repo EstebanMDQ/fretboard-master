@@ -1,21 +1,56 @@
 import { describe, expect, it } from 'vitest'
 import { GUITAR_STANDARD } from './tunings'
-import { SCALE_PRESETS, buildMarkers } from './scales'
+import { SCALE_FAMILIES, SCALE_PRESETS, buildMarkers } from './scales'
 import { pitchClassOfSpelling, spellDegree } from './notes'
 
-describe('SCALE_PRESETS', () => {
-  it('has 17 presets with strictly increasing intervals all below 12', () => {
-    expect(SCALE_PRESETS).toHaveLength(17)
-    for (const scale of SCALE_PRESETS) {
-      expect(scale.intervals.length).toBe(scale.degreeLabels.length)
-      for (const interval of scale.intervals) {
-        expect(interval).toBeGreaterThanOrEqual(0)
-        expect(interval).toBeLessThan(12)
-      }
-      for (let i = 1; i < scale.intervals.length; i++) {
-        expect(scale.intervals[i]).toBeGreaterThan(scale.intervals[i - 1])
+describe('SCALE_FAMILIES', () => {
+  it('has 8 families', () => {
+    expect(SCALE_FAMILIES).toHaveLength(8)
+    const names = SCALE_FAMILIES.map((f) => f.name)
+    expect(names).toEqual(['Major', 'Harmonic Minor', 'Melodic Minor', 'Pentatonic', 'Diminished', 'Augmented', 'Symmetrical', 'Other'])
+  })
+
+  it('Major family has 7 modes with Ionian first', () => {
+    const major = SCALE_FAMILIES.find((f) => f.name === 'Major')!
+    expect(major.modes).toHaveLength(7)
+    expect(major.modes[0].name).toBe('Ionian')
+    expect(major.modes[0].intervals).toEqual([0, 2, 4, 5, 7, 9, 11])
+  })
+
+  it('Harmonic Minor family has 7 modes with Harmonic Minor first', () => {
+    const hm = SCALE_FAMILIES.find((f) => f.name === 'Harmonic Minor')!
+    expect(hm.modes).toHaveLength(7)
+    expect(hm.modes[0].name).toBe('Harmonic Minor')
+    expect(hm.modes[0].intervals).toEqual([0, 2, 3, 5, 7, 8, 11])
+  })
+
+  it('Augmented family has 2 modes with correct intervals', () => {
+    const aug = SCALE_FAMILIES.find((f) => f.name === 'Augmented')!
+    expect(aug.modes).toHaveLength(2)
+    expect(aug.modes[0].intervals).toEqual([0, 3, 4, 7, 8, 11])
+    expect(aug.modes[1].intervals).toEqual([0, 1, 4, 5, 8, 9])
+  })
+
+  it('every mode has strictly increasing intervals all below 12, matching label count', () => {
+    for (const family of SCALE_FAMILIES) {
+      for (const mode of family.modes) {
+        expect(mode.intervals.length).toBe(mode.degreeLabels.length)
+        for (const interval of mode.intervals) {
+          expect(interval).toBeGreaterThanOrEqual(0)
+          expect(interval).toBeLessThan(12)
+        }
+        for (let i = 1; i < mode.intervals.length; i++) {
+          expect(mode.intervals[i]).toBeGreaterThan(mode.intervals[i - 1])
+        }
       }
     }
+  })
+})
+
+describe('SCALE_PRESETS', () => {
+  it('is derived from SCALE_FAMILIES and contains all modes', () => {
+    const total = SCALE_FAMILIES.reduce((sum, f) => sum + f.modes.length, 0)
+    expect(SCALE_PRESETS).toHaveLength(total)
   })
 
   it('disambiguates Lydian #4 from Locrian b5 (both 6 semitones from root)', () => {
@@ -26,8 +61,8 @@ describe('SCALE_PRESETS', () => {
   })
 
   it('defines the two octatonic diminished scales with matching interval/label spellings', () => {
-    const wholeHalf = SCALE_PRESETS.find((s) => s.name === 'Diminished (Whole-Half)')!
-    const halfWhole = SCALE_PRESETS.find((s) => s.name === 'Diminished (Half-Whole)')!
+    const wholeHalf = SCALE_PRESETS.find((s) => s.name === 'Whole-Half')!
+    const halfWhole = SCALE_PRESETS.find((s) => s.name === 'Half-Whole')!
     expect(wholeHalf.intervals).toEqual([0, 2, 3, 5, 6, 8, 9, 11])
     expect(halfWhole.intervals).toEqual([0, 1, 3, 4, 6, 7, 9, 10])
 
@@ -44,7 +79,7 @@ describe('SCALE_PRESETS', () => {
 })
 
 describe('buildMarkers', () => {
-  const major = SCALE_PRESETS.find((s) => s.name === 'Major (Ionian)')!
+  const major = SCALE_FAMILIES.find((f) => f.name === 'Major')!.modes[0]
   const root = { letter: 'G' as const, accidental: 0 as const }
 
   it('emphasizes the root and labels other degrees with note names by default', () => {
